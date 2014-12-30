@@ -129,10 +129,8 @@ public class UploadSequencesToDatabase extends DataUtility {
 					return false;
 				}
 /**/
-				
 			}
-		} else {
-Debugg.println("urlChecked returned false");
+		} else { // urlChecked returned false
 			return false;
 		}
 		return success;
@@ -318,7 +316,7 @@ Debugg.println("urlChecked returned false");
 	/** A very short name for menus.
 	 * @return	The name of the module*/
 	public String getNameForMenuItem(){
-		return "Upload sequences to database...";
+		return "Upload Sequences to Database...";
 	}
 	/*.................................................................................................................*/
 	/** @return	The name of the module*/
