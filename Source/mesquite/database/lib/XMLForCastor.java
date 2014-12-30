@@ -146,7 +146,8 @@ public class XMLForCastor {
 						blessedString = blessed ? "1" : "0";
 						XMLUtil.addFilledElement(sequenceElement, BLESSEDTAG, blessedString);
 
-						// See if final base call info is attached to this sequence.  Add it if so
+						// See if final base call info is attached to this sequence.  Add it if so.
+						// See also EditBaseCallPerson for details on how these NameReferences get assigned
 						NameReference firstRef = NameReference.getNameReference("finalBaseCallFirstRef");
 						Object finalBaseFirst = data.getAssociatedObject(firstRef, it);
 						NameReference lastRef = NameReference.getNameReference("finalBaseCallLastRef");
@@ -236,11 +237,7 @@ public class XMLForCastor {
 			}
 		} else return null;		
 	}
-
-	/*
-	 * ...........................................................................
-	 * ......................................
-	 */
+	/*.................................................................................................................*/
 	/**
 	 * Queries user for various options and sets corresponding values.
 	 * 
@@ -324,10 +321,7 @@ public class XMLForCastor {
 		return (buttonPressed.getValue() == 0);
 	}
 
-	/*
-	 * ...........................................................................
-	 * ......................................
-	 */
+	/*.................................................................................................................*/
 	/**
 	 * Checks to see if taxon {@code it} has character data.
 	 * 
@@ -351,46 +345,25 @@ public class XMLForCastor {
 		}
 		return false;
 	}
-
-	/*
-	 * ...........................................................................
-	 * ......................................
-	 */
+	/*.................................................................................................................*/
 	/**
 	 * Returns the name of taxa {@code it} in the block {@code taxa}
 	 * 
 	 * @return the name of the <i>it<sup>th</sup></i> taxa as a {@code String}
 	 */
-	protected String getTaxonName(Taxa taxa, int it) {// TODO: can add more
-														// here, if we want to
-														// try simplifying or
-														// parsing names to some
-														// rule or another
-		return taxa.getTaxonName(it);// could add suffixes et al. See
-										// InterpretFasta.getExportOptions
+	protected String getTaxonName(Taxa taxa, int it) {// TODO: can add more here, if we want to try simplifying or parsing names to some rule or another
+		return taxa.getTaxonName(it);// could add suffixes et al. See InterpretFasta.getExportOptions
 	}
-
-	/*
-	 * ...........................................................................
-	 * ......................................
-	 */
+	/*.................................................................................................................*/
 	/** @return N */
 	protected String getUnassignedSymbol() {
 		return "N";
 	}
-
-	/*
-	 * ...........................................................................
-	 * ......................................
-	 */
+	/*.................................................................................................................*/
 	public boolean isPrerelease() {
 		return true;
 	}
-
-	/*
-	 * ...........................................................................
-	 * ......................................
-	 */
+	/*.................................................................................................................*/
 	public boolean isSubstantive() {
 		return false;
 	}

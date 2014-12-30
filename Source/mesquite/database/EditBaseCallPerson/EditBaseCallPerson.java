@@ -7,16 +7,33 @@ import mesquite.lib.*;
 import mesquite.lib.characters.*;
 import mesquite.lib.duties.*;
 
+/**
+ * DataUtility to add a pair NameReference objects to sequences to indicate identity 
+ * of person who made final base calls.  Primarily used to migrate information into 
+ * database. 
+ */
 public class EditBaseCallPerson extends DataUtility {
 	protected String finalBaseFirst;
 	protected String finalBaseLast;
 	public boolean writeOnlySelectedSeqs = false;
 	public boolean purgeNames = false;
 
+	/**
+	 * @return true
+	 */
 	public boolean startJob(String arguments, Object condition, boolean hiredByName) {
 		return true;
 	}
 	/*.................................................................................................................*/
+	/**
+	 * Assigns final base call person identity to sequences in passed {@code data}.
+	 * 
+	 * @param CharacterData data
+	 * 	The sequence data to add/edit information
+	 * 
+	 * @return {@code true} if information is changed, {@code false} if not.  Stores identity information in a pair of 
+	 * {@link NameReference} objects: "finalBaseCallFirstRef" and "finalBaseCallLastRef". 
+	 */
 	public boolean operateOnData(CharacterData data) {
 		if (data == null) {
 			return false;
@@ -52,6 +69,13 @@ public class EditBaseCallPerson extends DataUtility {
 		}
 	}
 	/*.................................................................................................................*/
+	/**
+	 * Queries user for information to add/remove from sequences concerning the names of person responsible for 
+	 * performing final base calls.
+	 * 
+	 * @return {@code true} if 'OK' button was pressed and valid parameter combinations entered in dialog; otherwise 
+	 * 	returns {@code false}.
+	 */
 	private boolean queryNames() {
 		boolean success = false;
 		MesquiteInteger buttonPressed = new MesquiteInteger(1);
@@ -123,5 +147,4 @@ public class EditBaseCallPerson extends DataUtility {
 	public String getName() {
 		return "Add or Remove Base Call Person";
 	}
-
 }
