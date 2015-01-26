@@ -4,8 +4,11 @@ import java.io.IOException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.*;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
@@ -43,7 +46,7 @@ public class TestCIPRES extends UtilitiesAssistant {
 		String toolURL = baseURL + "/tool";
 
 		HttpClient httpclient = HttpClientBuilder.create().build();
-        
+		
         try {
         	Debugg.println("||||||||||||||||||||||||||");
         	Debugg.println("tool URL: \n" + toolURL);
@@ -85,6 +88,27 @@ public class TestCIPRES extends UtilitiesAssistant {
         	Debugg.println("Exception 2: "+ e.toString());
         	e.printStackTrace();
         }
+
+		/*
+		// from http://www.artima.com/forums/flat.jsp?forum=121&thread=357685
+		CredentialsProvider provider = new BasicCredentialsProvider();
+		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+		provider.setCredentials(AuthScope.ANY, credentials);
+		HttpClient httpclient = HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build();
+
+    	HttpGet httpget = new HttpGet(listURL); // Currently returns 404, maybe because missing cipres-appkey header
+        httpget.addHeader("cipres-appkey", CIPRESkey); //Need a value for this header
+        try {
+        	HttpResponse response = httpclient.execute(httpget);
+        	Debugg.println("-----------------RESPONSE-----------------------");
+        	Debugg.println(response.getStatusLine().toString());
+            // Would do something with response here...
+        	Debugg.println("----------------------------------------------------");
+            EntityUtils.consume(response.getEntity());
+        } catch (IOException e) {
+        	Debugg.printStackTrace(e);
+        }
+        */
 	}
 
 	public String getName() {
