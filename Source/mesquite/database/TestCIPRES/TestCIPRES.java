@@ -9,36 +9,47 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
-import mesquite.lib.Taxa;
-import mesquite.lib.TreeVector;
+import mesquite.lib.CommandChecker;
+import mesquite.lib.Debugg;
 import mesquite.lib.duties.*;
 
-public class TestCIPRES extends TreeSearcher {
+public class TestCIPRES extends UtilitiesAssistant {
 
 	public boolean startJob(String arguments, Object condition, boolean hiredByName) {
+		addMenuItem(null, "Test CIPRES...", makeCommand("testCIPRES", this));
 		return true;
 	}
-
-	public boolean initialize(Taxa taxa) {
-		return true;
+	/*.................................................................................................................*/
+	public Object doCommand(String commandName, String arguments, CommandChecker checker) {
+		if (checker.compare(this.getClass(), "Test CIPRES", null, commandName, "testCIPRES")) {
+			testCIPRes();
+		}
+		else
+			return super.doCommand(commandName, arguments, checker);
+		return null;
 	}
 
-	public void fillTreeBlock(TreeVector treeList) {
-		String username = "jcoliver";
-		String password = ""; // we would need to retrieve this from somewhere
-
-		String host = "www.phylo.org";
+	public void testCIPRes() {
+		String baseURL = "https://www.phylo.org/cipresrest/v1";
+		
+		String username = "DavidMaddison";
+		String password = "Think1859Trees"; // we would need to retrieve this from somewhere
+		String CIPRESkey = "Mesquite-7C63884588B8438CAE456E115C9643F3";
+		
 		// URL for a list of jobs
-		String listURL = "https://" + host + "/cipresrest/v1/" + username + "/job";
+		String listURL = baseURL + "/job/" + username;
 
 		// URL for list of tools (no authentication necessary)
-		String toolURL = "https://" + host + "/cipresrest/v1/tool";
+		String toolURL = baseURL + "/tool";
 
 		HttpClient httpclient = HttpClientBuilder.create().build();
         
         try {
-        	//HttpGet httpget = new HttpGet(listURL); // Currently returns 404, maybe because missing cipres-appkey header
-            HttpGet httpget = new HttpGet(toolURL); // This should return 200
+        	Debugg.println("||||||||||||||||||||||||||");
+        	Debugg.println("tool URL: \n" + toolURL);
+        	Debugg.println("list URL: \n" + listURL);
+        	HttpGet httpget = new HttpGet(listURL); // Currently returns 404, maybe because missing cipres-appkey header
+        	//HttpGet httpget = new HttpGet(toolURL); // This should return 200
             
             // Setting up the value of the Authentication header
             final String plainCreds = username + ":" + password;
@@ -46,26 +57,32 @@ public class TestCIPRES extends TreeSearcher {
             final byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
             final String base64Creds = new String(base64CredsBytes);
             httpget.addHeader("Authentication", "Basic " + base64Creds);
-            // httpget.addHeader("cipres-appkey", ""); Need a value for this header
+            httpget.addHeader("cipres-appkey", CIPRESkey); //Need a value for this header
             
-            System.out.println("Executing request " + httpget.getRequestLine());
+            Debugg.println("Executing request " + httpget.getRequestLine());
             HttpResponse response = httpclient.execute(httpget);
             try {
-                System.out.println("----------------------------------------");
-                System.out.println(response.getStatusLine());
+            	Debugg.println("-----------------RESPONSE-----------------------");
+            	Debugg.println(response.getStatusLine().toString());
                 // Would do something with response here...
-                
+            	Debugg.println("----------------------------------------------------");
+
                 EntityUtils.consume(response.getEntity());
             } catch (IOException e) {
+            	Debugg.println("IOException: "+ e.toString());
             	e.printStackTrace();
             } catch (Exception e) {
+            	Debugg.println("Exception: "+ e.toString());
             	e.printStackTrace();
             }
         } catch (ClientProtocolException e) {
-        	e.printStackTrace();
+        	Debugg.println("ClientProtocolException: "+ e.toString());
+       	e.printStackTrace();
         } catch (IOException e) {
+        	Debugg.println("IOException 2: "+ e.toString());
         	e.printStackTrace();
         } catch (Exception e) {
+        	Debugg.println("Exception 2: "+ e.toString());
         	e.printStackTrace();
         }
 	}
