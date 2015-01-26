@@ -33,7 +33,7 @@ public class TestCIPRES extends UtilitiesAssistant {
 		String baseURL = "https://www.phylo.org/cipresrest/v1";
 		
 		String username = "DavidMaddison";
-		String password = "Think1859Trees"; // we would need to retrieve this from somewhere
+		String password = ""; // we would need to retrieve this from somewhere
 		String CIPRESkey = "Mesquite-7C63884588B8438CAE456E115C9643F3";
 		
 		// URL for a list of jobs
