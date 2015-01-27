@@ -25,7 +25,14 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 
 public class TestCIPRES extends UtilitiesAssistant {
-	Document CipresDoc = null;
+
+	String baseURL = "https://www.phylo.org/cipresrest/v1";
+	boolean verbose = true;
+
+	static String username = "DavidMaddison";
+	static String password = ""; // we would need to retrieve this from somewhere
+	String CIPRESkey = "Mesquite-7C63884588B8438CAE456E115C9643F3";
+
 
 	public boolean startJob(String arguments, Object condition, boolean hiredByName) {
 		addMenuItem(null, "Send Job to CIPRES", makeCommand("sendJobToCIPRES", this));
@@ -33,6 +40,26 @@ public class TestCIPRES extends UtilitiesAssistant {
 		addMenuItem(null, "CIPRES Tool List", makeCommand("listCIPRESTools", this));
 		addMenuItem(null, "CIPRES Job Status...", makeCommand("checkJob", this));
 		return true;
+	}
+	/*.................................................................................................................*/
+	boolean checkUsernamePassword(){
+		if (StringUtil.blank(username) || StringUtil.blank(password)){
+			MesquiteBoolean answer = new MesquiteBoolean(false);
+			MesquiteString usernameString = new MesquiteString();
+			if (username!=null)
+				usernameString.setValue(username);
+			MesquiteString passwordString = new MesquiteString();
+			if (password!=null)
+				passwordString.setValue(password);
+			new UserNamePasswordDialog(containerOfModule(), "Username and Password", "Username", "Password", answer, usernameString, passwordString, false);
+			if (answer.getValue()){
+				username=usernameString.getValue();
+				password=passwordString.getValue();
+			}
+
+		}
+		return StringUtil.notEmpty(username) && StringUtil.notEmpty(password);
+
 	}
 	/*.................................................................................................................*/
 	public Object doCommand(String commandName, String arguments, CommandChecker checker) {
@@ -54,19 +81,13 @@ public class TestCIPRES extends UtilitiesAssistant {
 		return null;
 	}
 
-	String baseURL = "https://www.phylo.org/cipresrest/v1";
-
-	String username = "DavidMaddison";
-	String password = ""; // we would need to retrieve this from somewhere
-	String CIPRESkey = "Mesquite-7C63884588B8438CAE456E115C9643F3";
-
 	/*.................................................................................................................*/
-	public boolean loadXMLFile(String rootTag, String xmlFile) {
+	public Document loadXMLFile(String rootTag, String xmlFile) {
 		if (!StringUtil.blank(xmlFile)) {
-			CipresDoc = XMLUtil.getDocumentFromString(rootTag, xmlFile);
-			return CipresDoc!=null;
+			Document CipresDoc = XMLUtil.getDocumentFromString(rootTag, xmlFile);
+			return CipresDoc;
 		}
-		return false;
+		return null;
 	}
 
 	/*.................................................................................................................*/
@@ -77,12 +98,37 @@ public class TestCIPRES extends UtilitiesAssistant {
 		provider.setCredentials(AuthScope.ANY, credentials);
 		return HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build();
 	}
+	/*.................................................................................................................*/
+	public Document  cipresQuery(HttpClient httpclient, String URL, String xmlRootTag){
+		HttpGet httpget = new HttpGet(URL); 
+		httpget.addHeader("cipres-appkey", CIPRESkey);
+		try {
+			HttpResponse response = httpclient.execute(httpget);
+			HttpEntity responseEntity = response.getEntity();
+			InputStream instream = responseEntity.getContent();
+			BufferedReader br = new BufferedReader(new InputStreamReader(instream));
+			String line = "";
+			StringBuffer sb = new StringBuffer();
+			while((line = br.readLine()) != null) {
+				sb.append(line+StringUtil.lineEnding());
+			}
+			Document cipresResponseDoc = loadXMLFile(xmlRootTag, sb.toString());
+			if (cipresResponseDoc!=null && verbose) {
+				Debugg.println(sb.toString());
+			}
+			EntityUtils.consume(response.getEntity());
+			return cipresResponseDoc;
+		} catch (IOException e) {
+			Debugg.printStackTrace(e);
+		}
+		return null;
+	}
 
 	/*.................................................................................................................*/
 
-	public void processToolList() {
+	public void processToolList(Document cipresResponseDoc) {
 		String elementName = "tool";
-		List tools = CipresDoc.getRootElement().elements(elementName);
+		List tools = cipresResponseDoc.getRootElement().elements(elementName);
 		int count=0;
 		for (Iterator iter = tools.iterator(); iter.hasNext();) {
 			Element nextTool = (Element) iter.next();
@@ -102,75 +148,70 @@ public class TestCIPRES extends UtilitiesAssistant {
 
 	}
 	/*.................................................................................................................*/
-	public void  listTools(HttpClient httpclient){
-		String URL = baseURL + "/tool";
-		HttpGet httpget = new HttpGet(URL); // Currently returns 404, maybe because missing cipres-appkey header
-		httpget.addHeader("cipres-appkey", CIPRESkey); //Need a value for this header
-		try {
-			HttpResponse response = httpclient.execute(httpget);
-			Debugg.println("-----------------RESPONSE-----------------------");
-			Debugg.println(response.getStatusLine().toString());
 
-			HttpEntity responseEntity = response.getEntity();
-			InputStream instream = responseEntity.getContent();
-			BufferedReader br = new BufferedReader(new InputStreamReader(instream));
-			String line = "";
-			StringBuffer sb = new StringBuffer();
-			while((line = br.readLine()) != null) {
-				sb.append(line+StringUtil.lineEnding());
+	public String[] processJobsList(Document cipresResponseDoc) {
+		String elementName = "jobstatus";
+		Element jobs = cipresResponseDoc.getRootElement().element("jobs");
+		if (jobs==null)
+			return null;
+		List tools = jobs.elements("jobstatus");
+		int count=0;
+		for (Iterator iter = tools.iterator(); iter.hasNext();) {
+			Element nextTool = (Element) iter.next();
+			count++;
+		}
+		String[] url = new String[count];
+		count=0;
+		for (Iterator iter = tools.iterator(); iter.hasNext();) {
+			Element nextJob = (Element) iter.next();
+			if (nextJob!=null) {
+				Element selfUriElement= nextJob.element("selfUri");
+				if (selfUriElement!=null) {
+					String jobURL = selfUriElement.elementText("url");
+					if (!StringUtil.blank(jobURL)&& count<url.length) {
+						url[count] = jobURL;
+					}
+				}
+				count++;
 			}
-			if (loadXMLFile("tools", sb.toString())) {
-				processToolList();
-			}
-			Debugg.println("----------------------------------------------------");
-			EntityUtils.consume(response.getEntity());
-		} catch (IOException e) {
-			Debugg.printStackTrace(e);
+		}
+		return url;
+
+	}
+	/*.................................................................................................................*/
+	public void  listTools(HttpClient httpclient){
+		Document cipresResponseDoc = cipresQuery(httpclient, baseURL + "/tool", "tools");
+		if (cipresResponseDoc!=null) {
+			processToolList(cipresResponseDoc);
 		}
 	}
 	/*.................................................................................................................*/
 	public void  listJobs(HttpClient httpclient){
-		String URL = baseURL + "/job/" + username;
-		HttpGet httpget = new HttpGet(URL); 
-		httpget.addHeader("cipres-appkey", CIPRESkey);
-		try {
-			HttpResponse response = httpclient.execute(httpget);
-			Debugg.println("-----------------RESPONSE-----------------------");
-			Debugg.println(response.getStatusLine().toString());
+		Document cipresResponseDoc = cipresQuery(httpclient, baseURL + "/job/" + username, "joblist");
+		if (cipresResponseDoc!=null) {
+			String[] jobList = processJobsList(cipresResponseDoc);
+			if (jobList!=null)
+				for (int job=0; job<jobList.length; job++){
+					Debugg.println("job " + job + ": " + jobList[job]);
+					String status = reportJobStatus(jobList[job]);
+					Debugg.println("   " + status);
 
-			HttpEntity responseEntity = response.getEntity();
-			InputStream instream = responseEntity.getContent();
-			BufferedReader br = new BufferedReader(new InputStreamReader(instream));
-			StringBuffer sb = new StringBuffer();
-			String line = "";
-			while((line = br.readLine()) != null) {
-				sb.append(line+StringUtil.lineEnding());
-			}
-			if (loadXMLFile("joblist", sb.toString())) {
-				// do something with the joblist that is now in CipresDoc
-			}
-
-			Debugg.println("----------------------------------------------------");
-			Debugg.println(sb.toString());
-			Debugg.println("----------------------------------------------------");
-			EntityUtils.consume(response.getEntity());
-		} catch (IOException e) {
-			Debugg.printStackTrace(e);
+				}
 		}
 	}
 
 	/*.................................................................................................................*/
 
-	public void processJobSubmissionResponse() {
+	public void processJobSubmissionResponse(Document cipresResponseDoc) {
 
-		Element element = CipresDoc.getRootElement().element("selfUri");
+		Element element = cipresResponseDoc.getRootElement().element("selfUri");
 		Element subelement = null;
 		if (element!=null)
 			subelement=element.element("url");
 
 		Debugg.println("url " + subelement.getText());
 
-		element = CipresDoc.getRootElement().element("metadata");
+		element = cipresResponseDoc.getRootElement().element("metadata");
 		List entries = element.elements("entry");
 		String reportedJobID = "";
 		for (Iterator iter = entries.iterator(); iter.hasNext();) {
@@ -192,6 +233,7 @@ public class TestCIPRES extends UtilitiesAssistant {
 		HttpPost httppost = new HttpPost(URL);
 		httppost.addHeader("cipres-appkey", CIPRESkey); 
 
+		//http://stackoverflow.com/questions/18964288/upload-a-file-through-an-http-form-via-multipartentitybuilder-with-a-progress
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();        
 		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 
@@ -221,8 +263,9 @@ public class TestCIPRES extends UtilitiesAssistant {
 			while((line = br.readLine()) != null) {
 				sb.append(line+StringUtil.lineEnding());
 			}
-			if (loadXMLFile("jobstatus", sb.toString())) {
-				processJobSubmissionResponse();
+			Document cipresResponseDoc = loadXMLFile("jobstatus", sb.toString());
+			if (cipresResponseDoc!=null) {
+				processJobSubmissionResponse(cipresResponseDoc);
 			} else {
 				Debugg.println("********  no job status XML ********* ");
 			}
@@ -239,56 +282,91 @@ public class TestCIPRES extends UtilitiesAssistant {
 	}
 	/*.................................................................................................................*/
 	public boolean checkJob (HttpClient httpclient, String jobURL){
-		HttpGet httpget = new HttpGet(jobURL); 
-		httpget.addHeader("cipres-appkey", CIPRESkey);
-		try {
-			HttpResponse response = httpclient.execute(httpget);
-			Debugg.println("-----------------RESPONSE-----------------------");
-			Debugg.println(response.getStatusLine().toString());
-
-			HttpEntity responseEntity = response.getEntity();
-			InputStream instream = responseEntity.getContent();
-			BufferedReader br = new BufferedReader(new InputStreamReader(instream));
-			StringBuffer sb = new StringBuffer();
-			String line = "";
-			while((line = br.readLine()) != null) {
-				sb.append(line+StringUtil.lineEnding());
-			}
-			if (loadXMLFile("jobstatus", sb.toString())) {
-				// do something with the joblist that is now in CipresDoc
-			}
-
-			Debugg.println("----------------------------------------------------");
-			Debugg.println(sb.toString());
-			Debugg.println("----------------------------------------------------");
-			EntityUtils.consume(response.getEntity());
-		} catch (IOException e) {
-			Debugg.printStackTrace(e);
-			return false;
+		Document cipresResponseDoc = cipresQuery(httpclient, jobURL, "jobstatus");
+		if (cipresResponseDoc!=null) {
+			// process xml
 		}
 		return true;
 	}
+	
+	/*.................................................................................................................*/
+
+	public String jobStatusFromResponse(Document cipresResponseDoc) {
+
+		String status = "Status not available";
+		
+		Element element = cipresResponseDoc.getRootElement().element("terminalStage");
+		if (element!=null) {
+			status = element.getText();
+			if ("true".equalsIgnoreCase(status))
+				return "COMPLETED";
+		}
+		element = cipresResponseDoc.getRootElement().element("messages");
+		if (element==null)
+			return status;
+
+		List entries = element.elements("message");
+		String reportedJobID = "";
+		for (Iterator iter = entries.iterator(); iter.hasNext();) {
+			Element nextEntry = (Element) iter.next();
+			if (nextEntry!=null)
+				status= nextEntry.elementText("stage");
+		}
+
+		return status;
+
+	}
 
 	/*.................................................................................................................*/
+	public String getJobStatus (HttpClient httpclient, String jobURL){
+		verbose=false;
+		Document cipresResponseDoc = cipresQuery(httpclient, jobURL, "jobstatus");
+		verbose=true;
+		if (cipresResponseDoc!=null) {
+			return jobStatusFromResponse(cipresResponseDoc);
+		}
+		return "Status not available";
+	}
+
+
+	/*.................................................................................................................*/
+	public String reportJobStatus(String jobURL) {
+		if (checkUsernamePassword()) {
+			HttpClient httpclient = getHttpClient();
+			return getJobStatus(httpclient, jobURL);
+		}
+		return "Status not available";
+
+	}
+	/*.................................................................................................................*/
 	public boolean checkJobStatus(String jobURL) {
-		HttpClient httpclient = getHttpClient();
-		checkJob(httpclient, jobURL);
-		return true;
+		if (checkUsernamePassword()) {
+			HttpClient httpclient = getHttpClient();
+			checkJob(httpclient, jobURL);
+			return true;
+		}
+		return false;
 	}
 	/*.................................................................................................................*/
 	public void sendJobToCipres() {
-		HttpClient httpclient = getHttpClient();
-		postJob(httpclient, "RAXMLHPC2_TGB", "/ZephyrTest.fas", "ZEPHYR.0002");
+		if (checkUsernamePassword()) {
+			HttpClient httpclient = getHttpClient();
+			postJob(httpclient, "RAXMLHPC2_TGB", "/ZephyrTest.fas", "ZEPHYR.0004");
+		}
 	}
 	/*.................................................................................................................*/
 	public void listCipresJobs() {
-		HttpClient httpclient = getHttpClient();
-		listJobs(httpclient);
+		if (checkUsernamePassword()) {
+			HttpClient httpclient = getHttpClient();
+			listJobs(httpclient);
+		}
 	}
 	/*.................................................................................................................*/
 	public void listCipresTools() {
-		HttpClient httpclient = getHttpClient();
-		listTools(httpclient);
+		if (checkUsernamePassword()) {
+			HttpClient httpclient = getHttpClient();
+			listTools(httpclient);
+		}
 	}
 
 	public String getName() {
