@@ -23,7 +23,7 @@ import mesquite.database.lib.*;
 /**For directly submitting sequences to local database from within Mesquite.  Most of the 
  * XML formatting performed by {@link XMLForCastor}*/
 public class UploadSequencesToDatabase extends DataUtility {
-	String serverLoc = "http://128.193.224.129/castor/castor/main/xml-upload.php";
+	String serverLoc = "http://128.193.224.50/castor/xml-upload.php";
 	
 	public boolean startJob(String arguments, Object condition,	boolean hiredByName) {
 		return true;
