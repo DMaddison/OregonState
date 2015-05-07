@@ -158,6 +158,7 @@ public class UploadSequencesToDatabase extends DataUtility {
 					lineCounter++;
 				}
 				*/
+				/**/
 				ByteArrayInputStream is = new ByteArrayInputStream(EntityUtils.toByteArray(entity));
 				SAXReader saxReader = new SAXReader();
 				Document responseDocument = null;
@@ -232,6 +233,7 @@ public class UploadSequencesToDatabase extends DataUtility {
 						}
 					}//end else for !full_success
 				}//end else for uploadresponse
+				/**/
 
 				EntityUtils.consume(entity);//nom nom
 				return !fail;

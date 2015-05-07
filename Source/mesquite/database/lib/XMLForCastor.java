@@ -34,6 +34,7 @@ public class XMLForCastor {
 	final static String OUTERTAG = "sequenceset";
 	final static String SEQTAG = "sequence";
 	final static String CHROMTAG = "chromfile";
+	final static String ALTGENETAG = "alt_gene_info";
 	final static String SEQSTRINGTAG = "sequencestring";
 	final static String NAMETAG = "name";
 	final static String STATUSTAG = "status";
@@ -55,6 +56,7 @@ public class XMLForCastor {
 	// protected boolean allowSansChromats = false;
 	protected String contaminationNotes;
 	protected String status = STATUS_ROUGH;
+	protected String geneFragmentName = "";
 	protected String sampleCodePrefix = "DNA";
 	protected String primerStartToken = "_";
 
@@ -204,16 +206,22 @@ public class XMLForCastor {
 									XMLUtil.addFilledElement(sequenceElement, CHROMTAG, chromatFileNames[ic]);
 								}
 							}
-						} else { // no chromat file names found for sequences
-							String warning = "No chromatogram information found for " + getTaxonName(taxa, it) +
-							".  Uploads require information from at least one chromatogram for each sequence " +
-							"in order to make connections in database.";
-							if (!MesquiteThread.isScripting()) {
-								AlertDialog.notice(null, "Error", warning);
-							} else {
-								System.out.println(warning);
+						} else { // no chromat file names found for sequences, attach gene fragment name
+							if (geneFragmentName.length() > 0) {
+								XMLUtil.addFilledElement(sequenceElement, ALTGENETAG, geneFragmentName);
+							} else { // no chromat file or gene fragment name.  Reject the upload.
+								String warning = "No chromatogram information found for " + getTaxonName(taxa, it) +
+								" and gene fragment name was not entered" + 
+								".  Uploads require information from at least one chromatogram for each sequence " +
+								"or a valid gene fragment name " + 
+								"in order to make connections in database.";
+								if (!MesquiteThread.isScripting()) {
+									AlertDialog.notice(null, "Error", warning);
+								} else {
+									System.out.println(warning);
+								}
+								return null;
 							}
-							return null;
 							/*
 							if (!allowSansChromats) { // only sequences with chromatogram names are allowed
 								String warning = "Sorry, you are attempting to upload sequences with no associated chromatograms, but 'Allow " +
@@ -256,6 +264,11 @@ public class XMLForCastor {
 		helpString += "chromatogram file names.";
 		helpString += "<br /><br />For the final base call person, the database must already have a record of this person ";
 		helpString += "in the 'Persons' table.";
+		helpString += "<br /><br />If sequences do not have chromatogram information contained in this Mesquite file, the ";
+		helpString += "name of the gene fragment <strong>must</strong> be provided.  Check the CASTOR site for a list of ";
+		helpString += "acceptable gene fragment names.";
+		helpString += "<br /><br />Also, if chromatogram information is not available, be sure the last four characters in ";
+		helpString += "the sequence name correspond to the extraction number";
 		uploadDialog.appendToHelpString(helpString);
 		uploadDialog.addLabel("Upload options:");
 		Checkbox includeGapsCheckBox = uploadDialog.addCheckBox("include gaps",
@@ -266,6 +279,7 @@ public class XMLForCastor {
 				blessed);
 		Checkbox writeSelectedTaxaBox = uploadDialog.addCheckBox(
 				"Upload only selected taxa", writeOnlySelectedTaxa);
+		SingleLineTextField geneFragmentNameField = uploadDialog.addTextField("Gene fragment name", geneFragmentName, 4, true);
 		// Checkbox allowSansChromatsBox =
 		// uploadDialog.addCheckBox("Allow upload for sequences without chromatograms",
 		// allowSansChromats);
@@ -293,6 +307,7 @@ public class XMLForCastor {
 			contaminated = contaminatedCheckBox.getState();
 			blessed = blessedCheckBox.getState();
 			writeOnlySelectedTaxa = writeSelectedTaxaBox.getState();
+			geneFragmentName = geneFragmentNameField.getText();
 			// allowSansChromats = allowSansChromatsBox.getState();
 			sampleCodePrefix = sampleCodePrefixField.getText();
 			primerStartToken = primerStartTokenField.getText();
