@@ -104,14 +104,15 @@ public class EditBaseCallPerson extends DataUtility {
 			finalBaseLast = finalBaseLastField.getText();
 			writeOnlySelectedSeqs = writeSelectedBox.getState();
 			purgeNames = purgeNamesBox.getState();
-		}
-		if (purgeNames) {
-			finalBaseFirst = "";
-			finalBaseLast = "";
-			success = true;
-		} else { // if we are not purging, make sure names aren't empty
-			if (finalBaseFirst.length() > 0 && finalBaseLast.length() > 0) {
+
+			if (purgeNames) {
+				finalBaseFirst = "";
+				finalBaseLast = "";
 				success = true;
+			} else { // if we are not purging, make sure names aren't empty
+				if (finalBaseFirst.length() > 0 && finalBaseLast.length() > 0) {
+					success = true;
+				}
 			}
 		}
 		
