@@ -5,19 +5,22 @@ import java.util.*;
 
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
-
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.*;
 import org.apache.http.impl.client.*;
 import org.apache.http.util.*;
 import org.apache.http.*;
+import org.apache.commons.codec.binary.*;
 
 import mesquite.categ.lib.*;
 import mesquite.database.lib.AuthenticationElement;
 import mesquite.lib.*;
 import mesquite.lib.characters.CharacterData;
 import mesquite.lib.duties.*;
-
 import mesquite.database.lib.*;
 
 /**For directly submitting sequences to local database from within Mesquite.  Most of the 
@@ -85,28 +88,37 @@ public class UploadSequencesToDatabase extends DataUtility {
 			//Call XMLCastor.getXMLDocument to get the sequences in XML 
 			Document sequencesAsXML = formatter.getXMLDocument(data, containerOfModule());
 	
-			//Need to attach authentication details, so get the root element ("sequenceset" see XMLForCastor)
 			if (sequencesAsXML != null) {
-				Element rootElement = sequencesAsXML.getRootElement();
-				rootElement.addAttribute("username", username);
-				rootElement.addAttribute("password", password);
-				
 				//Change xml object to string so we can pass it to server
 				String docAsString = XMLUtil.getDocumentAsXMLString(sequencesAsXML, false);
 		
 				//To print the outgoing xml to the log (for debugging purposes), just uncomment the next 2 lines (and comment out the succeeding try/catch)
 				//logln(docAsString);
 				//return true;
-/**/
+				/**/
 			
 				//Document is now prepared.  Post it to the server.  Various exceptions are possible...
 				try{
+					CredentialsProvider provider = new BasicCredentialsProvider();
+					UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+					provider.setCredentials(AuthScope.ANY, credentials);
+					HttpClient httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build();
+					
 					StringEntity docAsStringEntity = new StringEntity(docAsString);
 					docAsStringEntity.setContentType("text/xml");
-					DefaultHttpClient httpClient = new DefaultHttpClient();
 					HttpPost httpPost = new HttpPost(serverLoc);
 					httpPost.setEntity(docAsStringEntity);
-		
+
+					// TODO: the following means of authentication and authorization should be revised to actually 
+					// use HTTP Basic Authentication in conjunction with the Apache server; the user credentials 
+					// are already set (see CredentialsProvider et al., above), but the server needs to be 
+					// re-configured to perform authentication.  In addition to simply identifying the user, though,
+					// the server must also be able to determine authorization level...
+					// For now, just using POST headers to pass user credentials
+					httpPost.addHeader("username", username);
+					byte[] passEncoded = Base64.encodeBase64(password.getBytes());
+					httpPost.addHeader("password", new String(passEncoded));
+
 					//Post attempt and receive the response
 					HttpResponse response = httpClient.execute(httpPost);
 		
@@ -128,7 +140,7 @@ public class UploadSequencesToDatabase extends DataUtility {
 					e.printStackTrace();
 					return false;
 				}
-/**/
+				/**/
 			}
 		} else { // urlChecked returned false
 			return false;
