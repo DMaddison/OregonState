@@ -15,6 +15,7 @@ import org.apache.http.impl.client.*;
 import org.apache.http.util.*;
 import org.apache.http.*;
 import org.apache.commons.codec.binary.*;
+import org.apache.commons.codec.binary.Base64;
 
 import mesquite.categ.lib.*;
 import mesquite.database.lib.AuthenticationElement;
