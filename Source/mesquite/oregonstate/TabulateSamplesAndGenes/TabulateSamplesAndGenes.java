@@ -45,7 +45,11 @@ public class TabulateSamplesAndGenes extends UtilitiesAssistant{
 	int duplicates = 0;
 	//String importedDirectoryPath, importedDirectoryName;
 	StringBuffer logBuffer;
-	
+	String sampleCodeListPath = null;
+	String sampleCodeListFile = null;
+	String sampleCodeList = "";
+	Parser sampleCodeListParser = null;
+
 	static final int maxCodes = 5000;
 
 	static final int gene28S=0;
@@ -81,6 +85,20 @@ public class TabulateSamplesAndGenes extends UtilitiesAssistant{
 				genes[i][j]="";
 		duplicates=0;
 	}
+	/*.................................................................................................................*/
+	public boolean processCodesFile() {
+		if (!StringUtil.blank(sampleCodeListPath)) {
+			sampleCodeList = MesquiteFile.getFileContentsAsString(sampleCodeListPath);
+
+			if (!StringUtil.blank(sampleCodeList)) {
+				sampleCodeListParser = new Parser(sampleCodeList);
+				return true;
+			}
+		}	
+		return false;
+
+	}
+
 	/*.................................................................................................................*/
 	void recordValues(int geneNumber, int sampleCode, String accession, String publication) {
 		if (sampleCode>=0 && sampleCode<maxCodes) {
@@ -177,6 +195,54 @@ public class TabulateSamplesAndGenes extends UtilitiesAssistant{
 
 	}
 	/*.................................................................................................................*/
+
+	public String infoFromTabbedDelimitedFile(String codeToMatch) {
+		if (sampleCodeListParser==null)
+			return null;
+		if (StringUtil.blank(codeToMatch))
+			return null;
+		sampleCodeListParser.setPosition(0);
+		Parser parser = new Parser();
+		String info = "";
+		String line = sampleCodeListParser.getRawNextDarkLine();
+		while (StringUtil.notEmpty(line)) {
+			parser.setString(line);
+			parser.setWhitespaceString("\t");
+			parser.setPunctuationString("");
+			String code = parser.getFirstToken();
+			String token = parser.getNextToken();
+			if (codeToMatch.equalsIgnoreCase(code)) {
+				return line.substring(code.length());
+			}
+			line = sampleCodeListParser.getRawNextDarkLine();
+		}
+		return null;
+	}
+	/*.................................................................................................................*/
+
+	public String titlesFromTabbedDelimitedFile() {
+		if (sampleCodeListParser==null)
+			return null;
+		sampleCodeListParser.setPosition(0);
+		Parser parser = new Parser();
+		String info = "";
+		String line = sampleCodeListParser.getRawNextDarkLine();
+		if (StringUtil.notEmpty(line)) {
+			parser.setString(line);
+			parser.setWhitespaceString("\t");
+			parser.setPunctuationString("");
+			String token = parser.getFirstToken();
+			token = parser.getNextToken();
+			while (token!=null){
+				info+="\t"+token;
+				token = parser.getNextToken();
+			}
+			return info;
+		}
+		return null;
+	}
+
+	/*.................................................................................................................*/
 	public boolean tabulateFiles(String directoryPath, File directory){
 
 		logBuffer.setLength(0);
@@ -215,10 +281,14 @@ public class TabulateSamplesAndGenes extends UtilitiesAssistant{
 
 		StringBuffer table = new StringBuffer();
 		table.append("code");
+		String titles = titlesFromTabbedDelimitedFile();
+		if (StringUtil.notEmpty(titles))
+			table.append(titles);
 		for (int gene=0; gene<numGenes && gene<geneName.length; gene++) {
 			table.append("\t"+geneName[gene]);
 		}
 		table.append("\n");
+		String sampleCode ="";
 		for (int code=0; code<maxCodes; code++){
 			boolean hasEntry=false;
 			for (int gene=0; gene<numGenes; gene++)   // check to see if there is anything in this row
@@ -229,13 +299,17 @@ public class TabulateSamplesAndGenes extends UtilitiesAssistant{
 			if (hasEntry) {
 				table.append("DNA");
 				if (code<10)
-					table.append("000"+code);
+					sampleCode="000"+code;
 				else if (code<100)
-					table.append("00"+code);
+					sampleCode="00"+code;
 				else if (code<1000)
-					table.append("0"+code);
+					sampleCode="0"+code;
 				else
-					table.append(code);
+					sampleCode =""+code;
+				table.append(sampleCode);
+				String info = infoFromTabbedDelimitedFile(sampleCode);
+				if (StringUtil.notEmpty(info))
+					table.append(info);
 
 				for (int gene=0; gene<numGenes; gene++) {
 					table.append("\t"+genes[code][gene]);
@@ -299,6 +373,14 @@ public class TabulateSamplesAndGenes extends UtilitiesAssistant{
 	public Object doCommand(String commandName, String arguments, CommandChecker checker) {
 		if (checker.compare(this.getClass(), "Tabulate samples and genes.", null, commandName, "tabulate")) {
 
+			MesquiteString dnaNumberListDir = new MesquiteString();
+			MesquiteString dnaNumberListFile = new MesquiteString();
+			String s = MesquiteFile.openFileDialog("Choose file containing sample codes", dnaNumberListDir, dnaNumberListFile);
+			if (!StringUtil.blank(s)) {
+				sampleCodeListPath = s;
+				sampleCodeListFile = dnaNumberListFile.getValue();
+				processCodesFile();
+			}
 			renameFiles(null);
 		}
 		else

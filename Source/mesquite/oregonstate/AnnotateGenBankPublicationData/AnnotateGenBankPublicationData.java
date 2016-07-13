@@ -47,23 +47,8 @@ public class AnnotateGenBankPublicationData extends TaxonUtility{
 	int duplicates = 0;
 	//String importedDirectoryPath, importedDirectoryName;
 	StringBuffer logBuffer;
+	int numProcessed = 0;
 
-
-	static final int gene28S=0;
-	static final int gene18S=1;
-	static final int geneCOIBC=2;
-	static final int geneCOIPJ=3;
-	static final int geneCAD2=4;
-	static final int geneCAD3=5;
-	static final int geneCAD4=6;
-	static final int geneTopo=7;
-	static final int geneMSP=8;
-	static final int geneWg=9;
-	static final int geneArgK=10;
-	static final int numGenes = 11;
-	
-
-	String[]geneName = new String[]{"28S", "18S","COIBC", "COIPJ", "CAD2", "CAD3", "CAD4", "Topo", "MSP", "wg", "ArgK"};
 
 	boolean preferencesSet = false;
 	boolean verbose=true;
@@ -105,8 +90,27 @@ public class AnnotateGenBankPublicationData extends TaxonUtility{
 				}
 			}
 			if (found) {
-				as.setAssociatedObject(MolecularData.genBankNumberRef, it, accession);
-				as.setAssociatedObject(CharacterData.publicationCodeNameRef, it, publication);
+				String previousGenBankValue = (String)taxa.getAssociatedObject(MolecularData.genBankNumberRef, it);
+				String previousPUBValue = (String)taxa.getAssociatedObject(MolecularData.publicationCodeNameRef, it);
+				if (StringUtil.notEmpty(previousGenBankValue) || StringUtil.notEmpty(previousPUBValue)){
+					String message = "WARNING: duplicate values: " + matrixData.getName()+", taxon " +taxa.getTaxonName(it);
+					if (StringUtil.notEmpty(previousGenBankValue)) 
+						message+=", previousGenBank: " + previousGenBankValue;
+					if (StringUtil.notEmpty(previousPUBValue)) 
+						message+=", previousPUB: " + previousPUBValue;
+					message+= ", newGenBank: " + accession + ", newPUB: " + publication;
+					logln(message);
+				}
+					
+				if (StringUtil.notEmpty(accession)) {
+					as.setAssociatedObject(MolecularData.genBankNumberRef, it, accession);
+					numProcessed++;
+				}
+				else if (StringUtil.notEmpty(publication)){
+					as.setAssociatedObject(CharacterData.publicationCodeNameRef, it, publication);
+					numProcessed++;
+				}
+				
 			}
 		}
 
@@ -128,6 +132,7 @@ public class AnnotateGenBankPublicationData extends TaxonUtility{
 		parser.setPunctuationString("_.");
 		String fullSampleCode ="";
 		String DRMCode ="";
+		String DNACode ="";
 		String code ="";
 		String gene ="";
 		String fragment ="";
@@ -138,8 +143,11 @@ public class AnnotateGenBankPublicationData extends TaxonUtility{
 		while (StringUtil.notEmpty(token)) {
 			if (token.startsWith("&v")) {
 				fullSampleCode=token.substring(2);
-				DRMCode=token.substring(8);
-				code = DRMCode;  //use this to decide
+				if (token.length()>7)
+					DRMCode=token.substring(8);
+				if (token.length()>4)
+					DNACode=token.substring(5);
+				code = DNACode;  //use this to decide
 			} else if (token.startsWith("&g")) {
 				gene=token.substring(2);
 			}  else if (token.startsWith("&a")) {
@@ -186,6 +194,8 @@ public class AnnotateGenBankPublicationData extends TaxonUtility{
 		String[] files = directory.list();
 		String cPath;
 		sequenceCount = 0;
+		numProcessed = 0;
+
 
 
 		logln(" Annotation. ");
@@ -212,6 +222,7 @@ public class AnnotateGenBankPublicationData extends TaxonUtility{
 		}
 
 		logln("Number of files examined: " + files.length);
+		logln("Number of annotations incorporated: " + numProcessed);
 
 		return true;
 
@@ -263,6 +274,7 @@ public class AnnotateGenBankPublicationData extends TaxonUtility{
 		if (checker.compare(this.getClass(), "Tabulate samples and genes.", null, commandName, "tabulate")) {
 
 			tabulate(null);
+			parametersChanged();
 		}
 		else
 			return  super.doCommand(commandName, arguments, checker);

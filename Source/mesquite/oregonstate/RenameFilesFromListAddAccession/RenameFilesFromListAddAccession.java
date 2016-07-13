@@ -102,6 +102,8 @@ public class RenameFilesFromListAddAccession extends UtilitiesAssistant{
 			if (token.startsWith("&v")){
 				newName.append(token+"_");
 			}
+			else if (token.startsWith("&a")){
+			}
 			else if (!token.equalsIgnoreCase("fas") && !token.equalsIgnoreCase("_")&& !token.equalsIgnoreCase(".")) {
 				newName.append(token+"_");
 			}
@@ -217,6 +219,8 @@ public class RenameFilesFromListAddAccession extends UtilitiesAssistant{
 						numPrepared++;
 						try {
 							String newFileName = getNewFileName(originalFileName, matchLine);
+							if (verbose)
+								loglnEchoToStringBuffer("   ->"+newFileName, logBuffer);
 							String newFilePath = directoryPath + MesquiteFile.fileSeparator + newFileName;					
 							File newFile = new File(newFilePath); //
 							cFile.renameTo(newFile); 
