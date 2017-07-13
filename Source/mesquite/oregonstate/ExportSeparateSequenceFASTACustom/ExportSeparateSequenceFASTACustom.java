@@ -4,6 +4,7 @@ import java.awt.Checkbox;
 
 import mesquite.chromaseq.ExportSeparateSequenceFASTA.*;
 import mesquite.chromaseq.lib.ChromaseqUtil;
+import mesquite.lib.Associable;
 import mesquite.lib.ExporterDialog;
 import mesquite.lib.MesquiteInteger;
 import mesquite.lib.RadioButtons;
@@ -44,12 +45,94 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		exportDialog.dispose();
 		return ok;
 	}	
+
+	static int seqID = 0;
 	/*.................................................................................................................*/
-	public String getFileName(Taxa taxa, int it, CharacterData data, int index, String voucherID) {
-		String fileName = "&v" + StringUtil.cleanseStringOfFancyChars(voucherPrefix+voucherID,false,true);
+	public String getIdentifierString() {
+		seqID++;
+		return "SEQID"+StringUtil.getIntegerAsStringWithLeadingZeros(seqID,8);
+	}
+
+	public String getPrimerListForTaxon(Taxa taxa, int it, CharacterData data){
+		if (data==null || taxa==null)
+			return "";
+		Associable as = data.getTaxaInfo(false);
+		String[] primers = ChromaseqUtil.getStringsAssociated(as,ChromaseqUtil.primerForEachReadNamesRef, it);
+		String s = "";
+
+		if (primers!=null) {
+			for (int i=1; i<primers.length; i+=2) {
+				s+="\t"+primers[i];
+			}
+			return s;
+		}
+		return "";
+	}
+
+	/*.................................................................................................................*/
+	public String getTitleLineForTabbedFile() {
+		String s = "identifier";
+		s+= "\t" + "sampleCode";
+		s+= "\t" + "gene";
+		s+= "\t" + "fragment";
+		s+= "\t" + "publication";
+		s+= "\t" + "taxon name";
+		s+= "\t" + "primers\r";
+		return s;
+	}
+	/*.................................................................................................................*/
+	public String getLineForTabbedFile(Taxa taxa, int it, CharacterData data, int index, String voucherID, String identifierString) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(identifierString);
+		sb.append("\t"+voucherPrefix+voucherID);
 
 		String s = ChromaseqUtil.getFragmentName(data, index);
+		String geneInfo = "\t";
 		if (StringUtil.notEmpty(s)) 
+			geneInfo = s+"\t";
+		else {
+			if ("CAD1".equalsIgnoreCase(data.getName())) {
+				geneInfo = "CAD\tCAD2";
+			} else if ("CAD2".equalsIgnoreCase(data.getName())) {
+				geneInfo = "CAD\tCAD2";
+			} else if ("CAD3".equalsIgnoreCase(data.getName())) {
+				geneInfo = "CAD\tCAD4";
+			} else if ("CAD4".equalsIgnoreCase(data.getName())) {
+				geneInfo = "CAD\tCAD4";
+			} else {
+				geneInfo = data.getName()+"\t";
+				if ("COI".equalsIgnoreCase(data.getName()) && StringUtil.notEmpty(COIFragmentName))
+					geneInfo += COIFragmentName;
+				else if ("CAD".equalsIgnoreCase(data.getName()) && StringUtil.notEmpty(CADFragmentName))
+					geneInfo += CADFragmentName;
+			}
+			sb.append("\t"+geneInfo);
+
+		}
+
+		if (StringUtil.notEmpty(publication)) 
+			sb.append("\t"+publication);
+		else
+			sb.append("t");
+		sb.append("\t"+taxa.getName(it));
+
+		sb.append(getPrimerListForTaxon(taxa, it, data));
+
+		return sb.toString()+"\r";
+	}
+
+	/*.................................................................................................................*/
+	public String getFileName(Taxa taxa, int it, CharacterData data, int index, String voucherID, String identifierString) {
+		String fileName="";
+		
+		if (StringUtil.notEmpty(identifierString)) 
+			fileName+="&i"+identifierString;
+		if (StringUtil.notEmpty(fileName))
+			fileName+="_";
+		fileName += "&v" + StringUtil.cleanseStringOfFancyChars(voucherPrefix+voucherID,false,true);
+
+		String s = ChromaseqUtil.getFragmentName(data, index);
+		if (StringUtil.notEmpty(s))   //TODO: is this correct????  DAVIDCHECK
 			fileName += "_&g"+StringUtil.cleanseStringOfFancyChars(s,false,true);
 		else {
 			if ("CAD1".equalsIgnoreCase(data.getName())) {
