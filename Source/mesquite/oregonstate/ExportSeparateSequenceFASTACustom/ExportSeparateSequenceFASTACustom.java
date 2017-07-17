@@ -7,6 +7,7 @@ import mesquite.chromaseq.lib.ChromaseqUtil;
 import mesquite.lib.Associable;
 import mesquite.lib.ExporterDialog;
 import mesquite.lib.MesquiteInteger;
+import mesquite.lib.NameReference;
 import mesquite.lib.RadioButtons;
 import mesquite.lib.SingleLineTextField;
 import mesquite.lib.StringUtil;
@@ -52,17 +53,22 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		seqID++;
 		return "SEQID"+StringUtil.getIntegerAsStringWithLeadingZeros(seqID,8);
 	}
+	
 
-	public String getPrimerListForTaxon(Taxa taxa, int it, CharacterData data){
+	/*.................................................................................................................*/
+	public String getListForTaxon(Taxa taxa, int it, CharacterData data, NameReference nr, int start, int increment){
 		if (data==null || taxa==null)
 			return "";
 		Associable as = data.getTaxaInfo(false);
-		String[] primers = ChromaseqUtil.getStringsAssociated(as,ChromaseqUtil.primerForEachReadNamesRef, it);
+		String[] list = ChromaseqUtil.getStringsAssociated(as,nr, it);
 		String s = "";
 
-		if (primers!=null) {
-			for (int i=1; i<primers.length; i+=2) {
-				s+="\t"+primers[i];
+		if (list!=null) {
+			for (int i=start; i<list.length; i+=increment) {
+				if (i>start)
+					s+=", "+list[i];
+				else
+					s+= list[i];
 			}
 			return s;
 		}
@@ -76,8 +82,10 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		s+= "\t" + "gene";
 		s+= "\t" + "fragment";
 		s+= "\t" + "publication";
-		s+= "\t" + "taxon name";
-		s+= "\t" + "primers\r";
+		s+= "\t" + "taxonName";
+		s+= "\t" + "primers";
+		s+= "\t" + "originalChromatogramNames";
+		s+="\r";
 		return s;
 	}
 	/*.................................................................................................................*/
@@ -116,7 +124,8 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 			sb.append("t");
 		sb.append("\t"+taxa.getName(it));
 
-		sb.append(getPrimerListForTaxon(taxa, it, data));
+		sb.append("\t"+getListForTaxon(taxa, it, data,ChromaseqUtil.primerForEachReadNamesRef,1,2));
+		sb.append("\t"+getListForTaxon(taxa, it, data, ChromaseqUtil.origReadFileNamesRef, 1,2));
 
 		return sb.toString()+"\r";
 	}
