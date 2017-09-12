@@ -141,7 +141,7 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		fileName += "&v" + StringUtil.cleanseStringOfFancyChars(voucherPrefix+voucherID,false,true);
 
 		String s = ChromaseqUtil.getFragmentName(data, index);
-		if (StringUtil.notEmpty(s))   //TODO: is this correct????  DAVIDCHECK
+		if (StringUtil.notEmpty(s))   //TODO: is this correct????  DAVIDCHECK [DRM added]
 			fileName += "_&g"+StringUtil.cleanseStringOfFancyChars(s,false,true);
 		else {
 			if ("CAD1".equalsIgnoreCase(data.getName())) {

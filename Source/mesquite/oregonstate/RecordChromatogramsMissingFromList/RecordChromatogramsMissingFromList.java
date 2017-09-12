@@ -217,6 +217,8 @@ public class RecordChromatogramsMissingFromList extends UtilitiesAssistant imple
 				loglnEchoToStringBuffer(""+sampleCodes[i], logBuffer);
 			}
 		}
+		
+		MesquiteFile.putFileContentsQuery("Save report file", logBuffer.toString(), true);
 
 
 		if (!abort) {

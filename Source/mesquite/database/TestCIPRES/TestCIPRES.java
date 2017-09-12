@@ -372,5 +372,12 @@ public class TestCIPRES extends UtilitiesAssistant {
 	public String getName() {
 		return "Test CIPRES connection";
 	}
+	
+	/*.................................................................................................................*/
+	public boolean loadModule() {
+		return false;
+	}
+	
+
 
 }
