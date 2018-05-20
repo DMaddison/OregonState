@@ -328,7 +328,7 @@ public class TabulateSamplesAndGenes extends UtilitiesAssistant{
 
 	}
 	/*.................................................................................................................*/
-	public boolean renameFiles(String directoryPath){
+	public boolean tabulateFiles(String directoryPath){
 		if ( logBuffer==null)
 			logBuffer = new StringBuffer();
 
@@ -381,7 +381,7 @@ public class TabulateSamplesAndGenes extends UtilitiesAssistant{
 				sampleCodeListFile = dnaNumberListFile.getValue();
 				processCodesFile();
 			}
-			renameFiles(null);
+			tabulateFiles(null);
 		}
 		else
 			return  super.doCommand(commandName, arguments, checker);

@@ -6,6 +6,7 @@ import mesquite.chromaseq.ExportSeparateSequenceFASTA.*;
 import mesquite.chromaseq.lib.ChromaseqUtil;
 import mesquite.lib.Associable;
 import mesquite.lib.ExporterDialog;
+import mesquite.lib.IntegerField;
 import mesquite.lib.MesquiteInteger;
 import mesquite.lib.NameReference;
 import mesquite.lib.RadioButtons;
@@ -15,9 +16,10 @@ import mesquite.lib.Taxa;
 import mesquite.lib.characters.CharacterData;
 
 public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFASTA {
-	String publication = "PUB";
+	String publication = "PUB000";
 	String COIFragmentName = "COIBC";
 	String CADFragmentName = "CAD4";
+	static int seqID = 1;
 
 	public boolean getExportOptions(boolean dataSelected, boolean taxaSelected){
 		MesquiteInteger buttonPressed = new MesquiteInteger(1);
@@ -29,6 +31,7 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		SingleLineTextField publicationField= exportDialog.addTextField("publication", publication, 8);
 		SingleLineTextField COIField= exportDialog.addTextField("COI Fragment", COIFragmentName, 8);
 		SingleLineTextField CADField= exportDialog.addTextField("CAD Fragment", CADFragmentName, 8);
+		IntegerField SeqIDField= exportDialog.addIntegerField("Starting sequence ID number", seqID, 8);
 
 		exportDialog.completeAndShowDialog(dataSelected, taxaSelected);
 
@@ -39,6 +42,9 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 			publication = publicationField.getText();
 			COIFragmentName = COIField.getText();
 			CADFragmentName = CADField.getText();
+			int tempSeqID=SeqIDField.getValue();
+			if (MesquiteInteger.isCombinable(tempSeqID))
+				seqID=tempSeqID;
 		}
 
 		voucherPrefix="DRMDNA";
@@ -47,11 +53,11 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		return ok;
 	}	
 
-	static int seqID = 0;
 	/*.................................................................................................................*/
 	public String getIdentifierString() {
+		String idString= "SEQID"+StringUtil.getIntegerAsStringWithLeadingZeros(seqID,8);
 		seqID++;
-		return "SEQID"+StringUtil.getIntegerAsStringWithLeadingZeros(seqID,8);
+		return idString;
 	}
 	
 
