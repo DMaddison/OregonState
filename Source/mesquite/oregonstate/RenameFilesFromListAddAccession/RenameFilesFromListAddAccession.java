@@ -54,6 +54,8 @@ public class RenameFilesFromListAddAccession extends UtilitiesAssistant{
 
 	boolean preferencesSet = false;
 	boolean verbose=true;
+	
+
 
 	/*.................................................................................................................*/
 	public boolean startJob(String arguments, Object condition, boolean hiredByName){
@@ -89,10 +91,11 @@ public class RenameFilesFromListAddAccession extends UtilitiesAssistant{
 	}
 	/*.................................................................................................................*/
 	public String getNewFileName(String originalFileName, String matchLine) {
-		Parser parser = new Parser(matchLine);
-		String token = parser.getFirstToken();// should be sample code
-		String geneName = parser.getNextToken();
-		String accessionNumber = parser.getNextToken();
+		MesquiteInteger pos = new MesquiteInteger(0);
+		String token = StringUtil.getNextTabbedToken(matchLine, pos);
+		String geneName = StringUtil.getNextTabbedToken(matchLine, pos);
+		String fragmentName = StringUtil.getNextTabbedToken(matchLine, pos); 
+		String accessionNumber = StringUtil.getNextTabbedToken(matchLine, pos); 
 		
 		StringBuffer newName = new StringBuffer();
 		parser.setString(originalFileName);
@@ -117,9 +120,15 @@ public class RenameFilesFromListAddAccession extends UtilitiesAssistant{
 
 		return newName.toString();
 	}
-	/*.................................................................................................................*/
+	/** This scans the file listing the accessions, and sees if a particular entry is in the list.  The file format
+	 * should be as follows:  Tab-delimited file, four columns.  
+	 * First column is sample code.
+	 * Second column is gene name
+	 * Third column is fragment name
+	 * Fourth column is GenBank accession number. 
+	 * */
 
-	public String codeIsInCodeListFile(String codeToMatch, String geneToMatch) {
+	public String codeIsInCodeListFile(String codeToMatch, String geneToMatch, String fragmentToMatch) {
 		if (sampleCodeListParser==null)
 			return null;
 		if (StringUtil.blank(codeToMatch)||StringUtil.blank(geneToMatch))
@@ -129,11 +138,17 @@ public class RenameFilesFromListAddAccession extends UtilitiesAssistant{
 		String line = sampleCodeListParser.getRawNextDarkLine();
 		while (StringUtil.notEmpty(line)) {
 			subParser.setString(line);
-			subParser.setWhitespaceString("\t");
-			subParser.setPunctuationString("");
-			String code = subParser.getFirstToken();
-			String gene = subParser.getNextToken();
-			if (codeToMatch.equalsIgnoreCase(code) && geneToMatch.equalsIgnoreCase(gene)) {
+			MesquiteInteger pos = new MesquiteInteger(0);
+			String code = StringUtil.getNextTabbedToken(line, pos);
+			String gene = StringUtil.getNextTabbedToken(line, pos);
+			String fragment = StringUtil.getNextTabbedToken(line, pos); 
+			fragment = StringUtil.stripBoundingWhitespace(fragment);
+			if (StringUtil.notEmpty(fragmentToMatch)) {
+				if (codeToMatch.equalsIgnoreCase(code) && geneToMatch.equalsIgnoreCase(gene)&& fragmentToMatch.equalsIgnoreCase(fragment)) {
+					return line;
+				}
+			}
+			else if (codeToMatch.equalsIgnoreCase(code) && geneToMatch.equalsIgnoreCase(gene)) {
 				return line;
 			}
 			line = sampleCodeListParser.getRawNextDarkLine();
@@ -185,6 +200,7 @@ public class RenameFilesFromListAddAccession extends UtilitiesAssistant{
 
 					String codeToMatch = "";
 					String geneToMatch = "";
+					String fragmentToMatch = "";
 					MesquiteString startTokenResult = new MesquiteString();
 					//here's where the names parser processes the name
 
@@ -192,11 +208,13 @@ public class RenameFilesFromListAddAccession extends UtilitiesAssistant{
 					parser.setPunctuationString("_.");
 					String token = parser.getFirstToken();
 					while (StringUtil.notEmpty(token)) {
-						if (token.startsWith("&v")) {  //get sample code
+						if (token.startsWith("&v")) {  //get sample code:   NOTE THIS PRESUMED proceded by "DRMDNA"
 							codeToMatch=token.substring(8);
-						} else if (token.startsWith("&g")) {  //get sample code
+						} else if (token.startsWith("&g")) {  //get gene
 							geneToMatch=token.substring(2);
-						}
+						} else if (token.startsWith("&f")) {  //get fragment
+						fragmentToMatch=token.substring(2);
+					}
 						token = parser.getNextToken();
 					}
 
@@ -208,8 +226,10 @@ public class RenameFilesFromListAddAccession extends UtilitiesAssistant{
 					if (startTokenResult.getValue() == null)
 						startTokenResult.setValue("");
 
-					
-					String matchLine = codeIsInCodeListFile(codeToMatch, geneToMatch);
+					if (codeToMatch.equalsIgnoreCase("2560")) {
+						Debugg.println(originalFileName);
+					}
+					String matchLine = codeIsInCodeListFile(codeToMatch, geneToMatch, fragmentToMatch);
 
 
 

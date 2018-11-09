@@ -111,7 +111,15 @@ public class AnnotateGenBankPublicationData extends TaxonUtility{
 					numProcessed++;
 				}
 				
+			} else if (verbose) {
+				String message = "WARNING: matrix found (" + matrixData.getName()+"), but not taxon; sample code: " +sampleCode;
+				logln(message);
+				
 			}
+				
+		} else if (verbose) {
+			String message = "WARNING: matrix not found: " + matrixName +", sample code " +sampleCode;
+			logln(message);
 		}
 
 	}

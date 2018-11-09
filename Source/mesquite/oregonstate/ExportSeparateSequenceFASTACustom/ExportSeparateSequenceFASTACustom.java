@@ -2,6 +2,7 @@ package mesquite.oregonstate.ExportSeparateSequenceFASTACustom;
 
 import java.awt.Checkbox;
 
+import mesquite.categ.lib.MolecularData;
 import mesquite.chromaseq.ExportSeparateSequenceFASTA.*;
 import mesquite.chromaseq.lib.ChromaseqUtil;
 import mesquite.lib.Associable;
@@ -13,6 +14,7 @@ import mesquite.lib.RadioButtons;
 import mesquite.lib.SingleLineTextField;
 import mesquite.lib.StringUtil;
 import mesquite.lib.Taxa;
+import mesquite.lib.Taxon;
 import mesquite.lib.characters.CharacterData;
 
 public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFASTA {
@@ -20,7 +22,8 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 	String COIFragmentName = "COIBC";
 	String CADFragmentName = "CAD4";
 	static int seqID = 1;
-
+	String prefixForTaxonName = "DNA";
+	
 	public boolean getExportOptions(boolean dataSelected, boolean taxaSelected){
 		MesquiteInteger buttonPressed = new MesquiteInteger(1);
 		ExporterDialog exportDialog = new ExporterDialog(this,containerOfModule(), "Single-sequence FASTA export [DRM Lab]", buttonPressed);
@@ -29,6 +32,7 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		exportDialog.addLabel("Saving each sequence in a separate FASTA file [DRM Lab]");
 
 		SingleLineTextField publicationField= exportDialog.addTextField("publication", publication, 8);
+		SingleLineTextField prefixField= exportDialog.addTextField("Prefix for Taxon Name", prefixForTaxonName, 8);
 		SingleLineTextField COIField= exportDialog.addTextField("COI Fragment", COIFragmentName, 8);
 		SingleLineTextField CADField= exportDialog.addTextField("CAD Fragment", CADFragmentName, 8);
 		IntegerField SeqIDField= exportDialog.addIntegerField("Starting sequence ID number", seqID, 8);
@@ -40,6 +44,7 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		//		convertAmbiguities = convertToMissing.getState();
 		if (ok) {
 			publication = publicationField.getText();
+			prefixForTaxonName = prefixField.getText();
 			COIFragmentName = COIField.getText();
 			CADFragmentName = CADField.getText();
 			int tempSeqID=SeqIDField.getValue();
@@ -52,6 +57,17 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		exportDialog.dispose();
 		return ok;
 	}	
+
+	public String getGenBankForTaxon (Taxa taxa, int it, CharacterData data){
+		if (data==null || taxa==null)
+			return "";
+		Taxon taxon = data.getTaxa().getTaxon(it);
+		Associable tInfo = data.getTaxaInfo(false);
+		if (tInfo != null && taxon != null) {
+			return (String)tInfo.getAssociatedObject(MolecularData.genBankNumberRef, it);
+		}
+		return "";
+	}
 
 	/*.................................................................................................................*/
 	public String getIdentifierString() {
@@ -167,7 +183,9 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 			}
 
 		}
-
+		String genBank = getGenBankForTaxon(taxa, it, data);
+		if (StringUtil.notEmpty(genBank)) 
+			fileName+="_&a"+genBank;
 
 		if (StringUtil.notEmpty(publication)) 
 			fileName+="_&p"+publication;
@@ -180,7 +198,7 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 	}
 	/*.................................................................................................................*/
 	public String getSequenceName(Taxa taxa, int it, String voucherID) {
-		return "DNA"+voucherID;
+		return prefixForTaxonName+voucherID;
 	}
 
 	/*.................................................................................................................*/
