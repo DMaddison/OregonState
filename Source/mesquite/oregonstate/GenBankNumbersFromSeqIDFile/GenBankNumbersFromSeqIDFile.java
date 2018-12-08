@@ -56,6 +56,25 @@ import mesquite.oregonstate.lib.*;
 		}
 		return "";
 	}
+	/*.................................................................................................................*/
+	public String getAlternativeFragmentName(CharacterData data) {
+		if ("CAD1".equalsIgnoreCase(data.getName())) {
+			return "CAD234";
+		} else if ("CAD2".equalsIgnoreCase(data.getName())) {
+			return "CAD234";
+		} else if ("CAD3".equalsIgnoreCase(data.getName())) {
+			return "CAD234";
+		} else if ("CAD4".equalsIgnoreCase(data.getName())) {
+			return "CAD234";
+		} else if ("COIBC".equalsIgnoreCase(data.getName())) {
+			return "COIAll";
+		} else if ("COIPJ".equalsIgnoreCase(data.getName())) {
+			return "COIAll";
+		} else if ("COIALL".equalsIgnoreCase(data.getName())) {
+			return "COIAll";
+		}
+		return "";
+	}
 
 	/*.................................................................................................................*/	/** A request for the MesquiteModule to perform a command.  It is passed two strings, the name of the command and the arguments.	This should be overridden by any module that wants to respond to a command.*/	public Object doCommand(String commandName, String arguments, CommandChecker checker) { 		if (checker.compare(MesquiteModule.class, null, null, commandName, "getGenBankNumbers")) {
 			if (taxa == null)
@@ -96,7 +115,7 @@ import mesquite.oregonstate.lib.*;
 						for (int it=0; it<taxa.getNumTaxa(); it++) {
 							String voucherCode = (String)taxa.getAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, it);
 
-							String line = codeFileWithGenBankNumbers.codeIsInCodeListFile(voucherCode, getGeneName(sequenceData), getFragmentName(sequenceData));
+							String line = codeFileWithGenBankNumbers.codeIsInCodeListFile(voucherCode, getGeneName(sequenceData), getFragmentName(sequenceData), getAlternativeFragmentName(sequenceData));
 							if (StringUtil.notEmpty(line)) {
 								String genBankNumber = codeFileWithGenBankNumbers.getGenBankNumberFromCodeFileLine(line);
 								if (StringUtil.notEmpty(genBankNumber)) {

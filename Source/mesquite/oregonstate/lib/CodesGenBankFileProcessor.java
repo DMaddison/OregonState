@@ -4,7 +4,7 @@ import mesquite.lib.MesquiteFile;
 import mesquite.lib.MesquiteInteger;
 import mesquite.lib.MesquiteString;
 import mesquite.lib.Parser;
-import mesquite.lib.StringUtil;
+import mesquite.lib.*;
 
 public class CodesGenBankFileProcessor {
 
@@ -40,6 +40,30 @@ public class CodesGenBankFileProcessor {
 	}
 	
 	
+	/*.................................................................................................................*/
+	public boolean codesMatch(String OTUIDCode, String codeInFile) {
+		if (codeInFile=="DRM0416") {
+			Debugg.println("DRM0416");
+		}
+		if (StringUtil.blank(OTUIDCode))
+			return false;
+		if (!OTUIDCode.contains("/"))  // doesn't contain multiple entries
+			return OTUIDCode.equalsIgnoreCase(codeInFile);
+		Parser parser = new Parser(OTUIDCode);
+		parser.setPunctuationString("/");
+		String code = parser.getFirstToken();
+		code = StringUtil.stripBoundingWhitespace(code);
+		while (StringUtil.notEmpty(code)) {
+			if (code.equalsIgnoreCase(codeInFile))
+				return true;
+			code = parser.getNextToken();
+			code = StringUtil.stripBoundingWhitespace(code);
+		}
+		return false;
+
+	}
+	
+	
 	/** This scans the file listing the accessions, and sees if a particular entry is in the list.  The file format
 	 * should be as follows:  Tab-delimited file, four columns.  
 	 * First column is sample code.
@@ -48,7 +72,7 @@ public class CodesGenBankFileProcessor {
 	 * Fourth column is GenBank accession number. 
 	 * */
 
-	public String codeIsInCodeListFile(String codeToMatch, String geneToMatch, String fragmentToMatch) {
+	public String codeIsInCodeListFile(String codeToMatch, String geneToMatch, String fragmentToMatch, String alternativeFragmentToMatch) {
 		if (sampleCodeListParser==null)
 			return null;
 		if (StringUtil.blank(codeToMatch)||StringUtil.blank(geneToMatch))
@@ -64,11 +88,11 @@ public class CodesGenBankFileProcessor {
 			String fragment = StringUtil.getNextTabbedToken(line, pos); 
 			fragment = StringUtil.stripBoundingWhitespace(fragment);
 			if (StringUtil.notEmpty(fragmentToMatch)) {
-				if (codeToMatch.equalsIgnoreCase(code) && geneToMatch.equalsIgnoreCase(gene)&& fragmentToMatch.equalsIgnoreCase(fragment)) {
+				if (codesMatch(codeToMatch, code) && geneToMatch.equalsIgnoreCase(gene)&& (fragmentToMatch.equalsIgnoreCase(fragment) || (StringUtil.notEmpty(alternativeFragmentToMatch) && alternativeFragmentToMatch.equalsIgnoreCase(fragment)))) {
 					return line;
 				}
 			}
-			else if (codeToMatch.equalsIgnoreCase(code) && geneToMatch.equalsIgnoreCase(gene)) {
+			else if (codesMatch(codeToMatch, code) && geneToMatch.equalsIgnoreCase(gene)) {
 				return line;
 			}
 			line = sampleCodeListParser.getRawNextDarkLine();
