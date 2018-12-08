@@ -42,9 +42,6 @@ public class CodesGenBankFileProcessor {
 	
 	/*.................................................................................................................*/
 	public boolean codesMatch(String OTUIDCode, String codeInFile) {
-		if (codeInFile=="DRM0416") {
-			Debugg.println("DRM0416");
-		}
 		if (StringUtil.blank(OTUIDCode))
 			return false;
 		if (!OTUIDCode.contains("/"))  // doesn't contain multiple entries
