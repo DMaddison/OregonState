@@ -22,7 +22,13 @@ public class InterpretFASTACustomDRM extends InterpretFastaDNA {
 					if (code.startsWith("DRMDNA")) {
 						code = "DRM" + code.substring(6);
 					}
-					taxa.setAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, taxonNumber, code);
+					String current = (String)taxa.getAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, taxonNumber);
+					if (StringUtil.blank(current))
+						taxa.setAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, taxonNumber, code);
+					else {
+						if (!StringUtil.containsIgnoreCase(current, code))  // if not there, add it
+							taxa.setAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, taxonNumber, current+"/"+code);
+					}
 				} else if (token.startsWith("&a")) {  // accession number token
 					String accession = token.substring(2);
 					Taxon taxon = data.getTaxa().getTaxon(taxonNumber);

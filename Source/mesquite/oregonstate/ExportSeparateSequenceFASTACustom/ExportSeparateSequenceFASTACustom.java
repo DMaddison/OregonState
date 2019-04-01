@@ -156,10 +156,6 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 	public String getFileName(Taxa taxa, int it, CharacterData data, int index, String voucherID, String identifierString) {
 		String fileName="";
 		
-		if (StringUtil.notEmpty(identifierString)) 
-			fileName+="&i"+identifierString;
-		if (StringUtil.notEmpty(fileName))
-			fileName+="_";
 		fileName += "&v" + StringUtil.cleanseStringOfFancyChars(voucherPrefix+voucherID,false,true);
 
 		String s = ChromaseqUtil.getFragmentName(data, index);
@@ -174,6 +170,8 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 				fileName += "_&gCAD_&fCAD4";
 			} else if ("CAD4".equalsIgnoreCase(data.getName())) {
 				fileName += "_&gCAD_&fCAD4";
+			} else if ("COIBC".equalsIgnoreCase(data.getName())) {
+				fileName += "_&gCOI_&fCOIBC";
 			} else {
 				fileName += "_&g"+StringUtil.cleanseStringOfFancyChars(data.getName(),false,true);
 				if ("COI".equalsIgnoreCase(data.getName()) && StringUtil.notEmpty(COIFragmentName))
@@ -190,6 +188,8 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		if (StringUtil.notEmpty(publication)) 
 			fileName+="_&p"+publication;
 		fileName+="_&n"+StringUtil.cleanseStringOfFancyChars(taxa.getName(it),false,true);
+		if (StringUtil.notEmpty(identifierString)) 
+			fileName+="_&i"+identifierString;
 
 
 		fileName += ".fas";
