@@ -10,7 +10,7 @@ import mesquite.lib.VoucherInfoFromOTUIDDB;
 
 public class InterpretFastaDNAByOTUID extends InterpretFastaDNA {
 
-	/*.................................................................................................................*/
+	/*.................................................................................................................*
 	public void setTaxonNameToIncoming(Taxon t, String incomingName) {  
 		if (StringUtil.blank(t.getName()))
 				t.setName(incomingName);
