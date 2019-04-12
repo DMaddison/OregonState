@@ -177,11 +177,51 @@ public class ListCompleteICOBSTaxa extends UtilitiesAssistant{
 		if (progIndicator!=null)
 			progIndicator.goAway();
 
+		int count=0;
+		loglnEchoToStringBuffer("\nTaxa that are complete:", logBuffer);
+
 		for (int i=0; i<vector.size(); i++) {
 			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
-			if (tc.taxonComplete())
+			if (tc.taxonComplete()) {
 				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
 		}
+		loglnEchoToStringBuffer("[Number of complete taxa: " + count + "]", logBuffer);
+		count=0;
+
+
+		loglnEchoToStringBuffer("\nTaxa that are missing only COI and Topo:", logBuffer);
+		for (int i=0; i<vector.size(); i++) {
+			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
+			if (tc.taxonCompleteExceptForCOIandTopo()) {
+				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
+		}
+		loglnEchoToStringBuffer("[Number missing only COI and Topo: " + count + "]", logBuffer);
+		count=0;
+
+		loglnEchoToStringBuffer("\nTaxa that are missing only COI:", logBuffer);
+		for (int i=0; i<vector.size(); i++) {
+			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
+			if (tc.taxonCompleteExceptForCOI()) {
+				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
+		}
+		loglnEchoToStringBuffer("[Number missing only COI: " + count + "]", logBuffer);
+		count=0;
+
+		loglnEchoToStringBuffer("\nTaxa that are missing only Topo:", logBuffer);
+		for (int i=0; i<vector.size(); i++) {
+			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
+			if (tc.taxonCompleteExceptForTopo()) {
+				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
+		}
+		loglnEchoToStringBuffer("[Number missing only Topo: " + count + "]", logBuffer);
 
 		return true;
 
@@ -340,6 +380,23 @@ class TaxonCompleteness {
 						&& genesPresent[GENECAD4] 
 								&& genesPresent[GENECOIBC] 
 										&& genesPresent[GENETopo];
+	}
+	public boolean taxonCompleteExceptForTopo(){
+		return genesPresent[GENE28S] 
+				&& genesPresent[GENEwg] 
+						&& genesPresent[GENECAD4] 
+								&& genesPresent[GENECOIBC];
+	}
+	public boolean taxonCompleteExceptForCOI(){
+		return genesPresent[GENE28S] 
+				&& genesPresent[GENEwg] 
+						&& genesPresent[GENECAD4] 
+								&& genesPresent[GENETopo];
+	}
+	public boolean taxonCompleteExceptForCOIandTopo(){
+		return genesPresent[GENE28S] 
+				&& genesPresent[GENEwg] 
+						&& genesPresent[GENECAD4];
 	}
 
 
