@@ -170,8 +170,14 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 				fileName += "_&gCAD_&fCAD4";
 			} else if ("CAD4".equalsIgnoreCase(data.getName())) {
 				fileName += "_&gCAD_&fCAD4";
+			} else if ("CAD234".equalsIgnoreCase(data.getName()) || "CADAll".equalsIgnoreCase(data.getName())) {
+				fileName += "_&gCAD_&fCAD234";
 			} else if ("COIBC".equalsIgnoreCase(data.getName())) {
 				fileName += "_&gCOI_&fCOIBC";
+			} else if ("COIPJ".equalsIgnoreCase(data.getName())) {
+				fileName += "_&gCOI_&fCOIPJ";
+			} else if ("COIAll".equalsIgnoreCase(data.getName())) {
+				fileName += "_&gCOI_&fCOIAll";
 			} else {
 				fileName += "_&g"+StringUtil.cleanseStringOfFancyChars(data.getName(),false,true);
 				if ("COI".equalsIgnoreCase(data.getName()) && StringUtil.notEmpty(COIFragmentName))
