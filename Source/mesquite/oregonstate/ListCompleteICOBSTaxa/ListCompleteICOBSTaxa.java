@@ -190,7 +190,7 @@ public class ListCompleteICOBSTaxa extends UtilitiesAssistant{
 		loglnEchoToStringBuffer("[Number of complete taxa: " + count + "]", logBuffer);
 		count=0;
 
-
+/*
 		loglnEchoToStringBuffer("\nTaxa that are missing only COI and Topo:", logBuffer);
 		for (int i=0; i<vector.size(); i++) {
 			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
@@ -222,6 +222,67 @@ public class ListCompleteICOBSTaxa extends UtilitiesAssistant{
 			}
 		}
 		loglnEchoToStringBuffer("[Number missing only Topo: " + count + "]", logBuffer);
+		count=0;
+
+*/
+
+		loglnEchoToStringBuffer("\n============================", logBuffer);
+
+		count=0;
+		loglnEchoToStringBuffer("\nTaxa that are missing 28S:", logBuffer);
+		for (int i=0; i<vector.size(); i++) {
+			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
+			if (tc.taxonMissingGene(TaxonCompleteness.GENE28S)) {
+				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
+		}
+		loglnEchoToStringBuffer("[Number missing 28S: " + count + "]", logBuffer);
+
+		count=0;
+		loglnEchoToStringBuffer("\nTaxa that are missing CAD4:", logBuffer);
+		for (int i=0; i<vector.size(); i++) {
+			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
+			if (tc.taxonMissingGene(TaxonCompleteness.GENECAD4)) {
+				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
+		}
+		loglnEchoToStringBuffer("[Number missing CAD4: " + count + "]", logBuffer);
+
+		count=0;
+		loglnEchoToStringBuffer("\nTaxa that are missing wg:", logBuffer);
+		for (int i=0; i<vector.size(); i++) {
+			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
+			if (tc.taxonMissingGene(TaxonCompleteness.GENEwg)) {
+				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
+		}
+		loglnEchoToStringBuffer("[Number missing wg: " + count + "]", logBuffer);
+
+		count=0;
+		loglnEchoToStringBuffer("\nTaxa that are missing COI:", logBuffer);
+		for (int i=0; i<vector.size(); i++) {
+			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
+			if (tc.taxonMissingGene(TaxonCompleteness.GENECOIBC)) {
+				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
+		}
+		loglnEchoToStringBuffer("[Number missing COI: " + count + "]", logBuffer);
+
+		count=0;
+		loglnEchoToStringBuffer("\nTaxa that are missing Topo:", logBuffer);
+		for (int i=0; i<vector.size(); i++) {
+			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
+			if (tc.taxonMissingGene(TaxonCompleteness.GENETopo)) {
+				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
+		}
+		loglnEchoToStringBuffer("[Number missing Topo: " + count + "]", logBuffer);
+
 
 		return true;
 
@@ -308,15 +369,15 @@ class TaxonCompleteness {
 	String code;
 	MesquiteModule ownerModule;
 
-	static int NUMREQUIREDGENES = 8;
-	static int GENE28S = 0;
-	static int GENECAD4 = 1;
-	static int GENEwg = 2;
-	static int GENECOIBC = 3;
-	static int GENETopo = 4;
-	static int GENEMSP = 5;
-	static int GENE18S = 6;
-	static int GENEArgK = 7;
+	public static int NUMREQUIREDGENES = 8;
+	public static int GENE28S = 0;
+	public static int GENECAD4 = 1;
+	public static int GENEwg = 2;
+	public static int GENECOIBC = 3;
+	public static int GENETopo = 4;
+	public static int GENEMSP = 5;
+	public static int GENE18S = 6;
+	public static int GENEArgK = 7;
 
 	boolean[] genesPresent = new boolean[NUMREQUIREDGENES];
 
@@ -385,18 +446,47 @@ class TaxonCompleteness {
 		return genesPresent[GENE28S] 
 				&& genesPresent[GENEwg] 
 						&& genesPresent[GENECAD4] 
-								&& genesPresent[GENECOIBC];
+								&& genesPresent[GENECOIBC] 
+										&& !genesPresent[GENETopo];
 	}
 	public boolean taxonCompleteExceptForCOI(){
 		return genesPresent[GENE28S] 
 				&& genesPresent[GENEwg] 
 						&& genesPresent[GENECAD4] 
-								&& genesPresent[GENETopo];
+								&& !genesPresent[GENECOIBC] 
+										&& genesPresent[GENETopo];
 	}
 	public boolean taxonCompleteExceptForCOIandTopo(){
 		return genesPresent[GENE28S] 
 				&& genesPresent[GENEwg] 
-						&& genesPresent[GENECAD4];
+						&& genesPresent[GENECAD4] 
+								&& !genesPresent[GENECOIBC] 
+										&& !genesPresent[GENETopo];
+	}
+	public boolean taxonCompleteExceptForWg(){
+		return genesPresent[GENE28S] 
+				&& !genesPresent[GENEwg] 
+						&& genesPresent[GENECAD4] 
+								&& genesPresent[GENECOIBC] 
+										&& genesPresent[GENETopo];
+	}
+	public boolean taxonCompleteExceptForCAD(){
+		return genesPresent[GENE28S] 
+				&& genesPresent[GENEwg] 
+						&& !genesPresent[GENECAD4] 
+								&& genesPresent[GENECOIBC] 
+										&& genesPresent[GENETopo];
+	}
+	public boolean taxonCompleteExceptFor28S(){
+		return !genesPresent[GENE28S] 
+				&& genesPresent[GENEwg] 
+						&& genesPresent[GENECAD4] 
+								&& genesPresent[GENECOIBC] 
+										&& genesPresent[GENETopo];
+	}
+
+	public boolean taxonMissingGene(int geneNumber){
+		return !genesPresent[geneNumber]; 
 	}
 
 
