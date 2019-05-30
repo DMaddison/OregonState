@@ -108,18 +108,22 @@ import mesquite.oregonstate.lib.*;
 				CommandRecord cRecord = new CommandRecord(true);
 				MesquiteThread.setCurrentCommandRecord(cRecord);
 				//at this point the vector should include only the ones not being shown.
+				boolean anySelected = table.anyCellSelectedAnyWay();
 				for (int i = 0; i<datas.size(); i++) {
 					if (datas.elementAt(i) instanceof MolecularData) {
 						MolecularData sequenceData =  (MolecularData)datas.elementAt(i);
-						Debugg.println("data: " + sequenceData.getName());
 						for (int it=0; it<taxa.getNumTaxa(); it++) {
-							String voucherCode = (String)taxa.getAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, it);
+							if (!anySelected || table.isRowSelected(it)) {
 
-							String line = codeFileWithGenBankNumbers.codeIsInCodeListFile(voucherCode, getGeneName(sequenceData), getFragmentName(sequenceData), getAlternativeFragmentName(sequenceData));
-							if (StringUtil.notEmpty(line)) {
-								String genBankNumber = codeFileWithGenBankNumbers.getGenBankNumberFromCodeFileLine(line);
-								if (StringUtil.notEmpty(genBankNumber)) {
-									sequenceData.setGenBankNumber(it, genBankNumber);
+								String voucherCode = (String)taxa.getAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, it);
+
+								String line = codeFileWithGenBankNumbers.codeIsInCodeListFile(voucherCode, getGeneName(sequenceData), getFragmentName(sequenceData), getAlternativeFragmentName(sequenceData));
+								if (StringUtil.notEmpty(line)) {
+									String genBankNumber = codeFileWithGenBankNumbers.getGenBankNumberFromCodeFileLine(line);
+									if (StringUtil.notEmpty(genBankNumber)) {
+										Debugg.println(" matrix " + sequenceData.getName() + ",  taxon " + taxa.getTaxonName(it) + ":  genBankNumber");
+										sequenceData.setGenBankNumber(it, genBankNumber);
+									}
 								}
 							}
 						}
