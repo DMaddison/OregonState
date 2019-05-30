@@ -22,7 +22,7 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 	String COIFragmentName = "COIBC";
 	String CADFragmentName = "CAD4";
 	static int seqID = 1;
-	String prefixForTaxonName = "DNA";
+	String prefixForTaxonName = "DRMDNA";
 	
 	public boolean getExportOptions(boolean dataSelected, boolean taxaSelected){
 		MesquiteInteger buttonPressed = new MesquiteInteger(1);
@@ -82,6 +82,8 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		if (data==null || taxa==null)
 			return "";
 		Associable as = data.getTaxaInfo(false);
+		if (as==null)
+			return "";
 		String[] list = ChromaseqUtil.getStringsAssociated(as,nr, it);
 		String s = "";
 

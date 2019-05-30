@@ -189,6 +189,21 @@ public class ListCompleteICOBSTaxa extends UtilitiesAssistant{
 		}
 		loglnEchoToStringBuffer("[Number of complete taxa: " + count + "]", logBuffer);
 		count=0;
+		
+		
+		loglnEchoToStringBuffer("\nTaxa that are complete in 28S CAD4 wg:", logBuffer);
+
+		for (int i=0; i<vector.size(); i++) {
+			TaxonCompleteness tc = (TaxonCompleteness)vector.elementAt(i);
+			if (tc.taxon28SCAD4wgComplete()) {
+				loglnEchoToStringBuffer(tc.getCode(), logBuffer);
+				count++;
+			}
+		}
+		loglnEchoToStringBuffer("[Number of taxa complete in 28S CAD4 wg: " + count + "]", logBuffer);
+		count=0;
+		
+
 
 /*
 		loglnEchoToStringBuffer("\nTaxa that are missing only COI and Topo:", logBuffer);
@@ -441,6 +456,11 @@ class TaxonCompleteness {
 						&& genesPresent[GENECAD4] 
 								&& genesPresent[GENECOIBC] 
 										&& genesPresent[GENETopo];
+	}
+	public boolean taxon28SCAD4wgComplete(){
+		return genesPresent[GENE28S] 
+				&& genesPresent[GENEwg] 
+						&& genesPresent[GENECAD4];
 	}
 	public boolean taxonCompleteExceptForTopo(){
 		return genesPresent[GENE28S] 
