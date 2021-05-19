@@ -113,29 +113,37 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		return s;
 	}
 	/*.................................................................................................................*/
+	private String getMatrixName(String name) {
+		String modifiedName = StringUtil.removeCharacters(name, " (from Phred/Phrap)");
+		if ("Topoisomerase".equalsIgnoreCase(name))
+			modifiedName = "Topo";
+		return modifiedName;
+	}
+	/*.................................................................................................................*/
 	public String getLineForTabbedFile(Taxa taxa, int it, CharacterData data, int index, String voucherID, String identifierString) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(identifierString);
 		sb.append("\t"+voucherPrefix+voucherID);
 
 		String s = ChromaseqUtil.getFragmentName(data, index);
+		String matrixName = getMatrixName(data.getName());
 		String geneInfo = "\t";
 		if (StringUtil.notEmpty(s)) 
 			geneInfo = s+"\t";
 		else {
-			if ("CAD1".equalsIgnoreCase(data.getName())) {
+			if ("CAD1".equalsIgnoreCase(matrixName)) {
 				geneInfo = "CAD\tCAD2";
-			} else if ("CAD2".equalsIgnoreCase(data.getName())) {
+			} else if ("CAD2".equalsIgnoreCase(matrixName)) {
 				geneInfo = "CAD\tCAD2";
-			} else if ("CAD3".equalsIgnoreCase(data.getName())) {
+			} else if ("CAD3".equalsIgnoreCase(matrixName)) {
 				geneInfo = "CAD\tCAD4";
-			} else if ("CAD4".equalsIgnoreCase(data.getName())) {
+			} else if ("CAD4".equalsIgnoreCase(matrixName)) {
 				geneInfo = "CAD\tCAD4";
 			} else {
-				geneInfo = data.getName()+"\t";
-				if ("COI".equalsIgnoreCase(data.getName()) && StringUtil.notEmpty(COIFragmentName))
+				geneInfo = matrixName+"\t";
+				if ("COI".equalsIgnoreCase(matrixName) && StringUtil.notEmpty(COIFragmentName))
 					geneInfo += COIFragmentName;
-				else if ("CAD".equalsIgnoreCase(data.getName()) && StringUtil.notEmpty(CADFragmentName))
+				else if ("CAD".equalsIgnoreCase(matrixName) && StringUtil.notEmpty(CADFragmentName))
 					geneInfo += CADFragmentName;
 			}
 			sb.append("\t"+geneInfo);
@@ -160,31 +168,32 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		
 		fileName += "&v" + StringUtil.cleanseStringOfFancyChars(voucherPrefix+voucherID,false,true);
 
+		String matrixName = getMatrixName(data.getName());
 		String s = ChromaseqUtil.getFragmentName(data, index);
 		if (StringUtil.notEmpty(s))   //TODO: is this correct????  DAVIDCHECK [DRM added]
 			fileName += "_&g"+StringUtil.cleanseStringOfFancyChars(s,false,true);
 		else {
-			if ("CAD1".equalsIgnoreCase(data.getName())) {
+			if ("CAD1".equalsIgnoreCase(matrixName)) {
 				fileName += "_&gCAD_&fCAD2";
-			} else if ("CAD2".equalsIgnoreCase(data.getName())) {
+			} else if ("CAD2".equalsIgnoreCase(matrixName)) {
 				fileName += "_&gCAD_&fCAD2";
-			} else if ("CAD3".equalsIgnoreCase(data.getName())) {
+			} else if ("CAD3".equalsIgnoreCase(matrixName)) {
 				fileName += "_&gCAD_&fCAD4";
-			} else if ("CAD4".equalsIgnoreCase(data.getName())) {
+			} else if ("CAD4".equalsIgnoreCase(matrixName)) {
 				fileName += "_&gCAD_&fCAD4";
-			} else if ("CAD234".equalsIgnoreCase(data.getName()) || "CADAll".equalsIgnoreCase(data.getName())) {
+			} else if ("CAD234".equalsIgnoreCase(matrixName) || "CADAll".equalsIgnoreCase(matrixName)) {
 				fileName += "_&gCAD_&fCAD234";
-			} else if ("COIBC".equalsIgnoreCase(data.getName())) {
+			} else if ("COIBC".equalsIgnoreCase(matrixName)) {
 				fileName += "_&gCOI_&fCOIBC";
-			} else if ("COIPJ".equalsIgnoreCase(data.getName())) {
+			} else if ("COIPJ".equalsIgnoreCase(matrixName)) {
 				fileName += "_&gCOI_&fCOIPJ";
-			} else if ("COIAll".equalsIgnoreCase(data.getName())) {
+			} else if ("COIAll".equalsIgnoreCase(matrixName)) {
 				fileName += "_&gCOI_&fCOIAll";
 			} else {
-				fileName += "_&g"+StringUtil.cleanseStringOfFancyChars(data.getName(),false,true);
-				if ("COI".equalsIgnoreCase(data.getName()) && StringUtil.notEmpty(COIFragmentName))
+				fileName += "_&g"+StringUtil.cleanseStringOfFancyChars(matrixName,false,true);
+				if ("COI".equalsIgnoreCase(matrixName) && StringUtil.notEmpty(COIFragmentName))
 					fileName += "_&f"+StringUtil.cleanseStringOfFancyChars(COIFragmentName,false,true);
-				else if ("CAD".equalsIgnoreCase(data.getName()) && StringUtil.notEmpty(CADFragmentName))
+				else if ("CAD".equalsIgnoreCase(matrixName) && StringUtil.notEmpty(CADFragmentName))
 					fileName += "_&f"+StringUtil.cleanseStringOfFancyChars(CADFragmentName,false,true);
 			}
 
