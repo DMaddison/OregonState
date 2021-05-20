@@ -114,9 +114,11 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 	}
 	/*.................................................................................................................*/
 	private String getMatrixName(String name) {
-		String modifiedName = StringUtil.removeCharacters(name, " (from Phred/Phrap)");
+		String modifiedName = name.replace(" (from Phred/Phrap)","");
 		if ("Topoisomerase".equalsIgnoreCase(name))
 			modifiedName = "Topo";
+		if ("Arginine_Kinase".equalsIgnoreCase(name))
+			modifiedName = "ArgK";
 		return modifiedName;
 	}
 	/*.................................................................................................................*/
