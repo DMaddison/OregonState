@@ -104,6 +104,8 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 	}
 	/*.................................................................................................................*/
 	public boolean getMultiFragmentAll(String gene, String geneFragment) {
+		if (StringUtil.blank(geneFragment))
+			return false;
 		if (gene.equalsIgnoreCase("COI")&& geneFragment.equalsIgnoreCase("COIAll"))
 			return true;
 		if (gene.equalsIgnoreCase("CAD")&& geneFragment.equalsIgnoreCase("CAD234"))
@@ -114,6 +116,8 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 	}
 	/*.................................................................................................................*/
 	public boolean getMultiFragmentStart(String gene, String geneFragment) {
+		if (StringUtil.blank(geneFragment))
+			return false;
 		if (gene.equalsIgnoreCase("COI")&& geneFragment.equalsIgnoreCase("COIBC"))
 			return true;
 		if (gene.equalsIgnoreCase("CAD")&& geneFragment.equalsIgnoreCase("CAD2"))
@@ -122,6 +126,8 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 	}
 	/*.................................................................................................................*/
 	public boolean getMultiFragmentEnd(String gene, String geneFragment) {
+		if (StringUtil.blank(geneFragment))
+			return false;
 		if (gene.equalsIgnoreCase("COI")&& geneFragment.equalsIgnoreCase("COIPJ"))
 			return true;
 		if (gene.equalsIgnoreCase("CAD")&& geneFragment.equalsIgnoreCase("CAD4"))
@@ -149,6 +155,16 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 		return false;
 	}
 	/*.................................................................................................................*/
+	public boolean sameFragment(String gene, String geneFragment, String otherGeneFragment) {
+		if (gene.equalsIgnoreCase("COI") || gene.equalsIgnoreCase("CAD")) {  // these ones need to have the gene fragment specified
+			if (StringUtil.notEmpty(geneFragment) && StringUtil.notEmpty(otherGeneFragment))  //  fragments specified for both
+				if (geneFragment.equalsIgnoreCase(otherGeneFragment))  // same one
+					return true;
+			return false;
+		} 
+		return true;
+	}
+	/*.................................................................................................................*/
 	public boolean fragmentNameMissing(String gene, String geneFragment) {
 		if (gene.equalsIgnoreCase("COI")) {
 			if (StringUtil.blank(geneFragment))  // no fragments specified for at least one
@@ -164,74 +180,89 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 	public String getAccessionNumber(String fileName) {
 		return getFileNameElement(fileName,"&a");
 	}
+	static String GENBANK = "GENBANK";
 	static String MULTIFRAGMENT = "MULTIFRAGMENT";
 	static String REPLACED = "REPLACED";
 	/*.................................................................................................................*/
 	private void markYounger(String directoryPath, String[] files, String cPath, File cFile, String fileName) {
 		String sampleCode = getOTUIDCode(fileName);
 		String gene = getGene(fileName);
+		if (StringUtil.blank(sampleCode)) {
+			logln("Note: Without a DRMDNA sample code. "+ fileName);
+			return;
+		}
+		if (StringUtil.blank(gene)) {
+			logln("WARNING: Gene is missing. "+ fileName);
+			return;
+		}
 		String geneFragment = getGeneFragment(fileName);
 		String accessionNumber = getAccessionNumber(fileName);
 		boolean inGenBank = StringUtil.notEmpty(accessionNumber);
 		String seqID = getSeqID(fileName);
 		int seqNumber = MesquiteInteger.fromString(seqID);
 		int maxSeqNumber = seqNumber;
+		if (!MesquiteInteger.isCombinable(maxSeqNumber))
+			maxSeqNumber=-1;
 		Vector fileVector = new Vector();
 		if (!inGenBank)
 			fileVector.addElement(fileName);  // only add ones not in GenBank
 		int maxVectorElement = 0;
 		boolean atLeastOneInGenBank = inGenBank;
-		
+
 		boolean multiFragmentAll = getMultiFragmentAll(gene, geneFragment);
 		boolean multiFragmentStart = getMultiFragmentStart(gene, geneFragment);
 		boolean multiFragmentEnd = getMultiFragmentEnd(gene, geneFragment);
 		boolean fragmentNameMissing = fragmentNameMissing(gene, geneFragment);
-		
+		boolean allSameFragment = true;
+
 
 		if (StringUtil.blank(sampleCode) && StringUtil.blank(gene) && StringUtil.blank(seqID)) {
 			return;
 		}
-/*		Debugg.println("\n\n" + fileName);
+		/*		Debugg.println("\n\n" + fileName);
 		Debugg.println("fileVector.size(): " + fileVector.size());
 		Debugg.println("sample: " + sampleCode + ", gene: " + gene + ", seqID: " + seqID+ ", seqNumber: " + seqNumber);
-*/
+		 */
 		for (int i=0; i<files.length; i++) {
-			if (files[i]!=null ) {
+			if (files[i]!=null) {
 				String otherPath;
 				otherPath = directoryPath + MesquiteFile.fileSeparator + files[i];
 				File otherFile = new File(otherPath);
 				if (otherFile.exists() && !otherFile.isDirectory() && (!files[i].startsWith("."))) {
 
 					String otherFileName = otherFile.getName();
-					if (StringUtil.notEmpty(fileName)) {
-						if (!fileName.contains(MULTIFRAGMENT) && !fileName.contains(REPLACED)) {
+					if (StringUtil.notEmpty(fileName) && StringUtil.notEmpty(otherFileName) && !fileName.equalsIgnoreCase(otherFileName)) {
+						String otherGene = getGene(otherFileName);
+						if (!fileName.contains(MULTIFRAGMENT) && !fileName.contains(REPLACED) && StringUtil.notEmpty(otherGene)) {
 							String otherSampleCode = getOTUIDCode(otherFileName);
-							String otherGene = getGene(otherFileName);
 							String otherGeneFragment = getGeneFragment(otherFileName);
 							String otherAccessionNumber = getAccessionNumber(otherFileName);
 							boolean otherInGenBank = StringUtil.notEmpty(otherAccessionNumber);
 							String otherSeqID = getSeqID(otherFileName);
 							int otherSeqNumber = MesquiteInteger.fromString(otherSeqID);
-							if (seqNumber!=otherSeqNumber && sampleCode.equalsIgnoreCase(otherSampleCode) && gene.equalsIgnoreCase(otherGene)) { // same sample, same gene
+							if (!MesquiteInteger.isCombinable(otherSeqNumber))
+								otherSeqNumber=-1;
+
+							if (sampleCode.equalsIgnoreCase(otherSampleCode) && gene.equalsIgnoreCase(otherGene) && (seqNumber!=otherSeqNumber || !MesquiteInteger.isCombinable(seqNumber))) { // same sample, same gene
 								if (getMultiFragmentAll(otherGene, otherGeneFragment))
 									multiFragmentAll=true;
 								if (getMultiFragmentStart(otherGene, otherGeneFragment))
 									multiFragmentStart=true;
 								if (getMultiFragmentEnd(otherGene, otherGeneFragment))
 									multiFragmentEnd=true;
-								if (correctFragment(gene, geneFragment, otherGeneFragment)) {
-									//Debugg.println("   other: sample: " + otherSampleCode + ", gene: " + otherGene + ", seqID: " + otherSeqID+ ", seqNumber: " + otherSeqNumber);
-									if (maxSeqNumber< otherSeqNumber) {  // found a new maximum
-										maxSeqNumber = otherSeqNumber;
-										maxVectorElement = fileVector.size();
-									}
-									if (!otherInGenBank)
-										fileVector.addElement(otherFileName);
-									else
-										atLeastOneInGenBank=true;
+								boolean otherFragmentNameMissing = fragmentNameMissing(gene, otherGeneFragment);
+								if (!sameFragment(gene, geneFragment, otherGeneFragment))
+									allSameFragment = false;
+
+								//Debugg.println("   other: sample: " + otherSampleCode + ", gene: " + otherGene + ", seqID: " + otherSeqID+ ", seqNumber: " + otherSeqNumber);
+								if (maxSeqNumber< otherSeqNumber) {  // found a new maximum
+									maxSeqNumber = otherSeqNumber;
+									maxVectorElement = fileVector.size();
 								}
-								if (fragmentNameMissing(gene, otherGeneFragment))
-									fragmentNameMissing=true;
+								//if (!otherInGenBank || !allSameFragment)
+								fileVector.addElement(otherFileName);
+								if (otherInGenBank)
+									atLeastOneInGenBank=true;
 							}
 						}
 					}
@@ -243,31 +274,37 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 		Debugg.println("maxSeqNumber: " + maxSeqNumber);
 		Debugg.println("maxVectorElement: " + maxVectorElement);
 		Debugg.println("fileVector.size(): " + fileVector.size());
-*/
-		
-		if (!(multiFragmentAll && multiFragmentStart && multiFragmentEnd) && !fragmentNameMissing) {   //don't remove if we have all components
+		 */
+
+		if (atLeastOneInGenBank) {  
 			for (int i=0; i<fileVector.size(); i++) {
-				if (maxVectorElement!=i || atLeastOneInGenBank) {
-					String originalPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i);
-					String modifiedPath="";
-					if (atLeastOneInGenBank)
-						modifiedPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i)+".GenBank."+REPLACED;
-					else
-						modifiedPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i)+"."+REPLACED;
+				String originalPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i);
+				String modifiedPath="";
+				boolean hasAccessionNumber = StringUtil.notEmpty(getAccessionNumber((String)fileVector.get(i)));  // double-check to see if this one has an accession number
+				if (allSameFragment && !hasAccessionNumber) { // if they are all the same fragment, we replace only  the non-GenBank ones 
+					modifiedPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i)+"."+REPLACED;
+					MesquiteFile.rename(originalPath, modifiedPath);
+				} else if (!allSameFragment)  { // if they aren't all the same fragment, we move everything over. 
+					modifiedPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i)+"."+GENBANK;
 					MesquiteFile.rename(originalPath, modifiedPath);
 				}
 			}
-		} else if ((multiFragmentAll && multiFragmentStart && multiFragmentEnd) || fragmentNameMissing)   //don't remove if we have all components
+		} else if (allSameFragment) {  
 			for (int i=0; i<fileVector.size(); i++) {
-				if (maxVectorElement!=i || atLeastOneInGenBank) {
+				if (maxVectorElement!=i) {
 					String originalPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i);
 					String modifiedPath="";
-					if (atLeastOneInGenBank)
-						modifiedPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i)+".GenBank." +MULTIFRAGMENT;
-					else
-						modifiedPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i)+"."+MULTIFRAGMENT;
+					modifiedPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i)+"."+REPLACED;
 					MesquiteFile.rename(originalPath, modifiedPath);
+
 				}
+			}
+		} else
+			for (int i=0; i<fileVector.size(); i++) {
+				String originalPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i);
+				String modifiedPath="";
+				modifiedPath = directoryPath + MesquiteFile.fileSeparator + fileVector.get(i)+"."+MULTIFRAGMENT;
+				MesquiteFile.rename(originalPath, modifiedPath);
 			}
 
 	}
@@ -287,8 +324,11 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 
 		loglnEchoToStringBuffer(" Removing older versions. ", logBuffer);
 		loglnEchoToStringBuffer("  "+directoryPath+"\n", logBuffer);
-		
+
 		cPath= directoryPath + MesquiteFile.fileSeparator +MULTIFRAGMENT;
+		if (!MesquiteFile.fileOrDirectoryExists(cPath))
+			MesquiteFile.createDirectory(cPath);
+		cPath= directoryPath + MesquiteFile.fileSeparator +GENBANK;
 		if (!MesquiteFile.fileOrDirectoryExists(cPath))
 			MesquiteFile.createDirectory(cPath);
 		cPath= directoryPath + MesquiteFile.fileSeparator +REPLACED;
@@ -317,7 +357,7 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 						if (progIndicator!=null) progIndicator.goAway();
 						return false;
 					}		
-					if (!fileName.contains(MULTIFRAGMENT) && !fileName.contains(REPLACED)) 
+					if (!fileName.contains(MULTIFRAGMENT) && !fileName.contains(REPLACED)&& !fileName.contains(GENBANK)) 
 						markYounger(directoryPath, files, cPath, cFile, fileName);
 				}
 			}
@@ -341,7 +381,7 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 				}
 			}
 		}
-		
+
 		files = directory.list();
 		int multiFragmentCount =0;
 		loglnEchoToStringBuffer("  Sequestering the following files to MULTIFRAGMENT directory:", logBuffer);
@@ -359,6 +399,22 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 			}
 		}
 
+		files = directory.list();
+		int genBankCount =0;
+		loglnEchoToStringBuffer("  Sequestering the following files to GenBank directory:", logBuffer);
+		for (int i=files.length-1; i>=0; i--) {
+			cPath = directoryPath + MesquiteFile.fileSeparator + files[i];
+			File cFile = new File(cPath);
+			if (cFile.exists() && !cFile.isDirectory() && (!files[i].startsWith("."))) {
+				if (files[i]!=null && files[i].contains(GENBANK)) {
+					originalPath= directoryPath + MesquiteFile.fileSeparator+ files[i];
+					modifiedPath= directoryPath + MesquiteFile.fileSeparator +GENBANK + MesquiteFile.fileSeparator+ files[i];
+					MesquiteFile.rename(originalPath, modifiedPath);
+					loglnEchoToStringBuffer("  " + files[i], logBuffer);
+					genBankCount++;
+				}
+			}
+		}
 
 		if (!abort) {
 
@@ -372,6 +428,7 @@ public class CleanOutOldFASTAFiles extends UtilitiesAssistant{
 		loglnEchoToStringBuffer("Number of files examined: " + files.length, logBuffer);
 		loglnEchoToStringBuffer("Number of files sequestered to "+ REPLACED +" directory: " + replaceCount, logBuffer);
 		loglnEchoToStringBuffer("Number of files sequestered to "+ MULTIFRAGMENT + " directory: " + multiFragmentCount, logBuffer);
+		loglnEchoToStringBuffer("Number of files sequestered to "+ GENBANK + " directory: " + genBankCount, logBuffer);
 
 
 

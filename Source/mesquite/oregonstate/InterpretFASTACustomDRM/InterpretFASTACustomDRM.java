@@ -20,7 +20,7 @@ public class InterpretFASTACustomDRM extends InterpretFastaDNA {
 				if (token.startsWith("&v")) {  // voucher token
 					String code = token.substring(2);
 					if (code.startsWith("DRMDNA")) {
-						code = "DRM" + code.substring(6);
+						code = "DRMDNA" + code.substring(6);
 					}
 					String current = (String)taxa.getAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, taxonNumber);
 					if (StringUtil.blank(current))
