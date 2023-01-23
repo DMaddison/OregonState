@@ -16,7 +16,7 @@ import mesquite.oregonstate.lib.*;
 		return "Get GenBank Numbers from File...";
 	}
 	public String getExplanation() {		return "Annotates with GenBank numbers in tab-delimited text file";	}	/*.................................................................................................................*/	public int getVersionOfFirstRelease(){		return -NEXTRELEASE;  	}	/*.................................................................................................................*/	public boolean startJob(String arguments, Object condition, boolean hiredByName){
-		addMenuItem("Get GenBank Numbers from File", new MesquiteCommand("getGenBankNumbers", this));		return true;	}
+		addMenuItem("Get GenBank Numbers from File...", new MesquiteCommand("getGenBankNumbers", this));		return true;	}
 	/*.................................................................................................................*/
 	public String getGeneName(CharacterData data) {
 		String geneName = data.getName();
