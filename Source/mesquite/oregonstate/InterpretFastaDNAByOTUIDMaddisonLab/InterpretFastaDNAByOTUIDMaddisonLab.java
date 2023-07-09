@@ -1,4 +1,4 @@
-package mesquite.oregonstate.InterpretFastaDNAByOTUID;
+package mesquite.oregonstate.InterpretFastaDNAByOTUIDMaddisonLab;
 
 import mesquite.categ.lib.MolecularData;
 import mesquite.chromaseq.lib.ChromaseqUtil;
@@ -11,7 +11,7 @@ import mesquite.lib.Taxon;
 import mesquite.lib.VoucherInfoFromOTUIDDB;
 import mesquite.lib.characters.CharacterData;
 
-public class InterpretFastaDNAByOTUID extends InterpretFastaDNA {
+public class InterpretFastaDNAByOTUIDMaddisonLab extends InterpretFastaDNA {
 
 	/*.................................................................................................................*
 	public void setTaxonNameToIncoming(Taxon t, String incomingName) {  

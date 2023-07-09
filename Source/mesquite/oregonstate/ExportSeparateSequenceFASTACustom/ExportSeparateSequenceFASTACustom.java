@@ -216,7 +216,7 @@ public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFAS
 		return fileName;
 	}
 	/*.................................................................................................................*/
-	public String getSequenceName(Taxa taxa, int it, String voucherID) {
+	public String getSequenceName(Taxa taxa, int it, CharacterData data, String voucherID) {
 		return prefixForTaxonName+voucherID;
 	}
 
