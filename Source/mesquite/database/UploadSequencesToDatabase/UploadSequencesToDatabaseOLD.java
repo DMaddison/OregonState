@@ -20,6 +20,9 @@ import mesquite.lib.*;
 import mesquite.lib.characters.*;
 import mesquite.lib.characters.CharacterData;
 import mesquite.lib.duties.*;
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 
 import mesquite.database.lib.*;
 
@@ -145,10 +148,10 @@ public class UploadSequencesToDatabaseOLD extends DataUtility{
 						}
 						
 						//Now need to fill in sequence
-						StringBuffer sequenceBuffer = new StringBuffer(20 + numChars);
+						MesquiteStringBuffer sequenceBuffer = new MesquiteStringBuffer(20 + numChars);
 						for (int ic = 0; ic<numChars; ic++) {
 							if (!writeOnlySelectedData || (data.getSelected(ic))){
-								int currentSize = sequenceBuffer.length();
+								long currentSize = sequenceBuffer.length();
 								boolean wroteMoreThanOneSymbol = false;
 								if (data.isUnassigned(ic, it)){
 									sequenceBuffer.append(getUnassignedSymbol());

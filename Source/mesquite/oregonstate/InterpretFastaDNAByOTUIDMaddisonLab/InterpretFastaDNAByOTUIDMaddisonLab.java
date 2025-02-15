@@ -6,9 +6,9 @@ import mesquite.io.InterpretFastaDNA.InterpretFastaDNA;
 import mesquite.lib.Associable;
 import mesquite.lib.Parser;
 import mesquite.lib.StringUtil;
-import mesquite.lib.Taxa;
-import mesquite.lib.Taxon;
-import mesquite.lib.VoucherInfoFromOTUIDDB;
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 import mesquite.lib.characters.CharacterData;
 
 public class InterpretFastaDNAByOTUIDMaddisonLab extends InterpretFastaDNA {

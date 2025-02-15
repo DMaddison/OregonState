@@ -7,6 +7,9 @@ import mesquite.database.lib.*;
 import mesquite.lib.*;
 import mesquite.lib.characters.CharacterData;
 import mesquite.lib.duties.*;
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 
 /**A class to export xml-formatted sequences for upload to local database*/
 public class SequenceExportForDatabase extends FileInterpreterI {
@@ -51,7 +54,7 @@ public class SequenceExportForDatabase extends FileInterpreterI {
 	 * @param	file	the {@code MesquiteFile} to which the data belong
 	 * @param	data	the data to format; must be {@link DNAState} data
 	 * @return	a {@code StringBuffer} of XML-formatted sequence; if problems are encountered, returns {@code null}*/
-	protected StringBuffer getDataAsEntity(MesquiteFile file, CharacterData data){
+	protected MesquiteStringBuffer getDataAsEntity(MesquiteFile file, CharacterData data){
 		if(data == null || file == null){
 			return null;
 		} else {
@@ -62,7 +65,7 @@ public class SequenceExportForDatabase extends FileInterpreterI {
 			//As long as Document is not null, send it as a string back to exportFile
 			if(sequencesAsXML != null){
 				String docAsString = XMLUtil.getDocumentAsXMLString(sequencesAsXML, false);
-				StringBuffer toReturn = new StringBuffer(docAsString);
+				MesquiteStringBuffer toReturn = new MesquiteStringBuffer(docAsString);
 				return toReturn;
 			} else return null;
 		}
@@ -82,7 +85,7 @@ public class SequenceExportForDatabase extends FileInterpreterI {
 			return false;
 		}
 
-		StringBuffer outputBuffer = getDataAsEntity(file, data);
+		MesquiteStringBuffer outputBuffer = getDataAsEntity(file, data);
 
 		if (outputBuffer != null) {
 			saveExportedFileWithExtension(outputBuffer, arguments, "xml");

@@ -30,6 +30,7 @@ import java.io.IOException;
 import javax.swing.JLabel;
 
 import mesquite.lib.*;
+import mesquite.lib.ui.*;
 import mesquite.lib.duties.*;
 import mesquite.chromaseq.lib.*;
 

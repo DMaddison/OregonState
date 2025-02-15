@@ -9,6 +9,9 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JLabel;
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 
 import mesquite.lib.*;
 import mesquite.lib.duties.*;

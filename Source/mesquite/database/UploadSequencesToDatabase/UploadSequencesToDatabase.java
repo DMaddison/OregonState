@@ -23,6 +23,9 @@ import mesquite.lib.*;
 import mesquite.lib.characters.CharacterData;
 import mesquite.lib.duties.*;
 import mesquite.database.lib.*;
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 
 /**For directly submitting sequences to local database from within Mesquite.  Most of the 
  * XML formatting performed by {@link XMLForCastor}*/

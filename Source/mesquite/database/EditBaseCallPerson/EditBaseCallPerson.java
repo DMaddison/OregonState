@@ -6,6 +6,9 @@ import mesquite.categ.lib.RequiresAnyDNAData;
 import mesquite.lib.*;
 import mesquite.lib.characters.*;
 import mesquite.lib.duties.*;
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 
 /**
  * DataUtility to add a pair NameReference objects to sequences to indicate identity 

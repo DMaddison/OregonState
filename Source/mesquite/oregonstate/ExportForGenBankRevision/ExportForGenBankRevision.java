@@ -3,8 +3,9 @@ package mesquite.oregonstate.ExportForGenBankRevision;
 import mesquite.categ.lib.MolecularData;
 import mesquite.io.InterpretFastaDNA.InterpretFastaDNA;
 import mesquite.lib.Associable;
-import mesquite.lib.Taxa;
-import mesquite.lib.Taxon;
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 import mesquite.lib.characters.CharacterData;
 
 public class ExportForGenBankRevision extends InterpretFastaDNA {

@@ -4,6 +4,9 @@ import mesquite.categ.lib.MolecularData;
 import mesquite.lib.characters.CharacterData;
 import mesquite.io.InterpretFastaDNA.InterpretFastaDNA;
 import mesquite.lib.*;
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 
 public class InterpretFASTACustomDRM extends InterpretFastaDNA {
 	

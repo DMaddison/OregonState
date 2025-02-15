@@ -32,6 +32,9 @@ import javax.sound.midi.Sequencer;
 import javax.swing.JLabel;
 
 import mesquite.lib.*;
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 import mesquite.lib.duties.*;
 import java.util.*;
 import mesquite.chromaseq.lib.*;

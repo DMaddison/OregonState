@@ -3,6 +3,7 @@ package mesquite.database.AuthenticationDefaults;
 import mesquite.database.lib.*;
 import mesquite.lib.*;
 import mesquite.lib.duties.*;
+import mesquite.lib.ui.*;
 
 public class AuthenticationDefaults extends DefaultsAssistant{
 

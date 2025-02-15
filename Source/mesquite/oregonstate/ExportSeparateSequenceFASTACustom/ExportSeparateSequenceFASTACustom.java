@@ -2,6 +2,9 @@ package mesquite.oregonstate.ExportSeparateSequenceFASTACustom;
 
 import java.awt.Checkbox;
 
+import mesquite.lib.ui.*;
+import mesquite.lib.taxa.*;
+import mesquite.lib.misc.*;
 import mesquite.categ.lib.MolecularData;
 import mesquite.chromaseq.ExportSeparateSequenceFASTA.*;
 import mesquite.chromaseq.lib.ChromaseqUtil;
@@ -10,11 +13,7 @@ import mesquite.lib.ExporterDialog;
 import mesquite.lib.IntegerField;
 import mesquite.lib.MesquiteInteger;
 import mesquite.lib.NameReference;
-import mesquite.lib.RadioButtons;
-import mesquite.lib.SingleLineTextField;
 import mesquite.lib.StringUtil;
-import mesquite.lib.Taxa;
-import mesquite.lib.Taxon;
 import mesquite.lib.characters.CharacterData;
 
 public class ExportSeparateSequenceFASTACustom extends ExportSeparateSequenceFASTA {
