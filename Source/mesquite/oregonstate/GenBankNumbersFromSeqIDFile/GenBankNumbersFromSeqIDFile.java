@@ -13,13 +13,13 @@ import mesquite.oregonstate.lib.*;
 /* ======================================================================== */public class GenBankNumbersFromSeqIDFile extends TaxaListAssistantI  {	Taxa taxa;	MesquiteTable table;
 	CodesGenBankFileProcessor codeFileWithGenBankNumbers;
 	public String getName() {
-		return "Get GenBank Numbers from File";
+		return "Get GenBank Accession Numbers from File";
 	}
 	public String getNameForMenuItem() {
-		return "Get GenBank Numbers from File...";
+		return "Get GenBank Accession Numbers from File...";
 	}
-	public String getExplanation() {		return "Annotates with GenBank numbers in tab-delimited text file";	}	/*.................................................................................................................*/	public int getVersionOfFirstRelease(){		return -NEXTRELEASE;  	}	/*.................................................................................................................*/	public boolean startJob(String arguments, Object condition, boolean hiredByName){
-		addMenuItem("Get GenBank Numbers from File...", new MesquiteCommand("getGenBankNumbers", this));		return true;	}
+	public String getExplanation() {		return "Annotates with GenBank accession numbers in tab-delimited text file";	}	/*.................................................................................................................*/	public int getVersionOfFirstRelease(){		return -NEXTRELEASE;  	}	/*.................................................................................................................*/	public boolean startJob(String arguments, Object condition, boolean hiredByName){
+		addMenuItem("Get GenBank Accession Numbers from File...", new MesquiteCommand("getGenBankNumbers", this));		return true;	}
 	/*.................................................................................................................*/
 	public String getGeneName(CharacterData data) {
 		String geneName = data.getName();
@@ -112,6 +112,8 @@ import mesquite.oregonstate.lib.*;
 				MesquiteThread.setCurrentCommandRecord(cRecord);
 				//at this point the vector should include only the ones not being shown.
 				boolean anySelected = table.anyCellSelectedAnyWay();
+				int added = 0;
+				int count = 0;
 				for (int i = 0; i<datas.size(); i++) {
 					if (datas.elementAt(i) instanceof MolecularData) {
 						MolecularData sequenceData =  (MolecularData)datas.elementAt(i);
@@ -121,18 +123,27 @@ import mesquite.oregonstate.lib.*;
 								String voucherCode = (String)taxa.getAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, it);
 
 								String line = codeFileWithGenBankNumbers.codeIsInCodeListFile(voucherCode, getGeneName(sequenceData), getFragmentName(sequenceData), getAlternativeFragmentName(sequenceData));
+								count++;
 								if (StringUtil.notEmpty(line)) {
 									String genBankNumber = codeFileWithGenBankNumbers.getGenBankNumberFromCodeFileLine(line);
+									String oldGenBankNumber = sequenceData.getGenBankNumber(it);
 									if (StringUtil.notEmpty(genBankNumber)) {
-										Debugg.println(" matrix " + sequenceData.getName() + ",  taxon " + taxa.getTaxonName(it) + ":  genBankNumber");
+										if (!genBankNumber.equalsIgnoreCase(oldGenBankNumber)) {
+											logln(" GenBank accession number added for matrix " + sequenceData.getName() + ",  taxon " + taxa.getTaxonName(it) + ":  genBankNumber");
+											added++;
+											count=0;
+										}
 										sequenceData.setGenBankNumber(it, genBankNumber);
 									}
 								}
+								if (count % 100 == 0)
+									log(".");
 							}
 						}
 					}
 
 				}
+				logln("/n"+ added + " GenBank accession numbers added");
 
 				MesquiteThread.setCurrentCommandRecord(prevR);
 			}		}		else			return  super.doCommand(commandName, arguments, checker);		return null;	}	/*.................................................................................................................*/	public boolean isSubstantive(){		return false;	}	/*.................................................................................................................*/	public void setTableAndTaxa(MesquiteTable table, Taxa taxa){		this.table = table;		this.taxa = taxa;	}}
