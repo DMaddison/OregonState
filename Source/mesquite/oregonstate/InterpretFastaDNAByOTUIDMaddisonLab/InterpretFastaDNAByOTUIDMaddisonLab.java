@@ -91,7 +91,7 @@ public class InterpretFastaDNAByOTUIDMaddisonLab extends InterpretFastaDNA {
 	}
 	/*.................................................................................................................*/
 	public String getName() {
-		return "FASTA - Taxon Names Match OTU ID Code [DRM Lab Custom]";
+		return "FASTA - Taxon Names Match Taxon ID Code [DRM Lab Custom]";
 	}
 
 }
