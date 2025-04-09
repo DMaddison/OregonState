@@ -17,7 +17,7 @@ public class CodesGenBankFileProcessor {
 	public boolean chooseCodeFile() {
 		MesquiteString dnaNumberListDir = new MesquiteString();
 		MesquiteString dnaNumberListFile = new MesquiteString();
-		String s = MesquiteFile.openFileDialog("Choose file containing sample codes", dnaNumberListDir, dnaNumberListFile);
+		String s = MesquiteFile.openFileDialog("Choose file containing sample codes and GenBank numbers", dnaNumberListDir, dnaNumberListFile);
 		if (!StringUtil.blank(s)) {
 			sampleCodeListPath = s;
 			sampleCodeListFile = dnaNumberListFile.getValue();

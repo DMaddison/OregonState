@@ -119,6 +119,7 @@ import mesquite.oregonstate.lib.*;
 						MolecularData sequenceData =  (MolecularData)datas.elementAt(i);
 						for (int it=0; it<taxa.getNumTaxa(); it++) {
 							if (!anySelected || table.isRowSelected(it)) {
+								boolean wroteToLog = false;
 
 								String voucherCode = (String)taxa.getAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, it);
 
@@ -129,21 +130,22 @@ import mesquite.oregonstate.lib.*;
 									String oldGenBankNumber = sequenceData.getGenBankNumber(it);
 									if (StringUtil.notEmpty(genBankNumber)) {
 										if (!genBankNumber.equalsIgnoreCase(oldGenBankNumber)) {
-											logln(" GenBank accession number added for matrix " + sequenceData.getName() + ",  taxon " + taxa.getTaxonName(it) + ":  genBankNumber");
+											wroteToLog = true;
+											logln("  GenBank accession number added for matrix " + sequenceData.getName() + ",  taxon " + taxa.getTaxonName(it) + ":  "+ genBankNumber);
 											added++;
 											count=0;
 										}
 										sequenceData.setGenBankNumber(it, genBankNumber);
 									}
 								}
-								if (count % 100 == 0)
+								if (!wroteToLog && count>0 && count % 100 == 0)
 									log(".");
 							}
 						}
 					}
 
 				}
-				logln("/n"+ added + " GenBank accession numbers added");
+				logln(""+added + " GenBank accession numbers added");
 
 				MesquiteThread.setCurrentCommandRecord(prevR);
 			}		}		else			return  super.doCommand(commandName, arguments, checker);		return null;	}	/*.................................................................................................................*/	public boolean isSubstantive(){		return false;	}	/*.................................................................................................................*/	public void setTableAndTaxa(MesquiteTable table, Taxa taxa){		this.table = table;		this.taxa = taxa;	}}
