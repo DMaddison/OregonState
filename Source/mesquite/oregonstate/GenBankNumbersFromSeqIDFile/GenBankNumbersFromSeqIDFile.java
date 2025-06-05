@@ -13,13 +13,13 @@ import mesquite.oregonstate.lib.*;
 /* ======================================================================== */public class GenBankNumbersFromSeqIDFile extends TaxaListAssistantI  {	Taxa taxa;	MesquiteTable table;
 	CodesGenBankFileProcessor codeFileWithGenBankNumbers;
 	public String getName() {
-		return "Get GenBank Accession Numbers from File";
+		return "Get GenBank Accession Numbers from File [DRM]";
 	}
 	public String getNameForMenuItem() {
-		return "Get GenBank Accession Numbers from File...";
+		return "Get GenBank Accession Numbers from File [DRM]...";
 	}
 	public String getExplanation() {		return "Annotates with GenBank accession numbers in tab-delimited text file";	}	/*.................................................................................................................*/	public int getVersionOfFirstRelease(){		return -NEXTRELEASE;  	}	/*.................................................................................................................*/	public boolean startJob(String arguments, Object condition, boolean hiredByName){
-		addMenuItem("Get GenBank Accession Numbers from File...", new MesquiteCommand("getGenBankNumbers", this));		return true;	}
+		addMenuItem("Get GenBank Accession Numbers from File [DRM]...", new MesquiteCommand("getGenBankNumbers", this));		return true;	}
 	/*.................................................................................................................*/
 	public String getGeneName(CharacterData data) {
 		String geneName = data.getName();
