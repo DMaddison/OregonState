@@ -10,7 +10,7 @@ import mesquite.lib.*;import mesquite.lib.characters.CharacterData;
 import mesquite.categ.lib.*;
 import mesquite.lib.duties.*;import mesquite.lib.table.*;
 import mesquite.oregonstate.lib.*;
-/* ======================================================================== */public class RemovePUBMetadata extends TaxaListAssistantI  {	Taxa taxa;	MesquiteTable table;
+/* ======================================================================== */public class RemovePUBMetadata extends TaxonListUtility  {	Taxa taxa;	MesquiteTable table;
 	public String getName() {
 		return "Remove PUB Metadata";
 	}
@@ -18,39 +18,41 @@ import mesquite.oregonstate.lib.*;
 		return "Remove PUB Metadata";
 	}
 	public String getExplanation() {		return "Removes PUB Metadata associated with sequences.";	}	/*.................................................................................................................*/	public int getVersionOfFirstRelease(){		return -NEXTRELEASE;  	}	/*.................................................................................................................*/	public boolean startJob(String arguments, Object condition, boolean hiredByName){
-		addMenuItem("Remove PUB Metadata", new MesquiteCommand("removePUBMetadata", this));		return true;	}
+//		addMenuItem("Remove PUB Metadata", new MesquiteCommand("removePUBMetadata", this));		return true;	}
 
-	/*.................................................................................................................*/	/** A request for the MesquiteModule to perform a command.  It is passed two strings, the name of the command and the arguments.	This should be overridden by any module that wants to respond to a command.*/	public Object doCommand(String commandName, String arguments, CommandChecker checker) { 		if (checker.compare(MesquiteModule.class, null, null, commandName, "removePUBMetadata")) {
-			if (taxa == null)
-				return null;
-			int numMatrices = getProject().getNumberCharMatrices(taxa);
-			if (numMatrices<1)
-				return null;
-			Vector datas = new Vector();
-			for (int i = 0; i<numMatrices; i++){
-				CharacterData data = getProject().getCharacterMatrix(taxa, i);
-				if (data.isUserVisible())
-					datas.addElement(data);
-			}			if (getEmployer() instanceof ListModule){
-				ListModule listModule = (ListModule)getEmployer();
-				Puppeteer puppeteer = new Puppeteer(this);
-				CommandRecord prevR = MesquiteThread.getCurrentCommandRecord();
-				CommandRecord cRecord = new CommandRecord(true);
-				MesquiteThread.setCurrentCommandRecord(cRecord);
-				//at this point the vector should include only the ones not being shown.
-				boolean anySelected = table.anyCellSelectedAnyWay();
-				for (int i = 0; i<datas.size(); i++) {
-					if (datas.elementAt(i) instanceof MolecularData) {
-						MolecularData sequenceData =  (MolecularData)datas.elementAt(i);
-						for (int it=0; it<taxa.getNumTaxa(); it++) {
-							if (!anySelected || table.isRowSelected(it)) {
-								String publicationCode = (String)taxa.getAssociatedObject(CharacterData.publicationCodeNameRef, it);
-								sequenceData.setPublicationCode(it, "");
-							}
+	/*.................................................................................................................*/	public boolean isSubstantive(){		return false;	}	/*.................................................................................................................*/	public boolean operateOnTaxa(MesquiteTable table, Taxa taxa){		this.table = table;		this.taxa = taxa;		if (taxa == null)
+			return false;
+		int numMatrices = getProject().getNumberCharMatrices(taxa);
+		if (numMatrices<1)
+			return false;
+		Vector datas = new Vector();
+		for (int i = 0; i<numMatrices; i++){
+			CharacterData data = getProject().getCharacterMatrix(taxa, i);
+			if (data.isUserVisible())
+				datas.addElement(data);
+		}
+		if (getEmployer() instanceof ListModule){
+			ListModule listModule = (ListModule)getEmployer();
+			Puppeteer puppeteer = new Puppeteer(this);
+			CommandRecord prevR = MesquiteThread.getCurrentCommandRecord();
+			CommandRecord cRecord = new CommandRecord(true);
+			MesquiteThread.setCurrentCommandRecord(cRecord);
+			//at this point the vector should include only the ones not being shown.
+			boolean anySelected = table.anyCellSelectedAnyWay();
+			for (int i = 0; i<datas.size(); i++) {
+				if (datas.elementAt(i) instanceof MolecularData) {
+					MolecularData sequenceData =  (MolecularData)datas.elementAt(i);
+					for (int it=0; it<taxa.getNumTaxa(); it++) {
+						if (!anySelected || table.isRowSelected(it)) {
+							String publicationCode = (String)taxa.getAssociatedObject(CharacterData.publicationCodeNameRef, it);
+							sequenceData.setPublicationCode(it, "");
 						}
 					}
-
 				}
 
-				MesquiteThread.setCurrentCommandRecord(prevR);
-			}		}		else			return  super.doCommand(commandName, arguments, checker);		return null;	}	/*.................................................................................................................*/	public boolean isSubstantive(){		return false;	}	/*.................................................................................................................*/	public void setTableAndTaxa(MesquiteTable table, Taxa taxa){		this.table = table;		this.taxa = taxa;	}}
+			}
+
+			MesquiteThread.setCurrentCommandRecord(prevR);
+		}
+		return true;
+	}}

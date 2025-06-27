@@ -10,7 +10,7 @@ import mesquite.lib.*;import mesquite.lib.characters.CharacterData;
 import mesquite.categ.lib.*;
 import mesquite.lib.duties.*;import mesquite.lib.table.*;
 import mesquite.oregonstate.lib.*;
-/* ======================================================================== */public class GenBankNumbersFromSeqIDFile extends TaxaListAssistantI  {	Taxa taxa;	MesquiteTable table;
+/* ======================================================================== */public class GenBankNumbersFromSeqIDFile extends TaxonListUtility  {	Taxa taxa;	MesquiteTable table;
 	CodesGenBankFileProcessor codeFileWithGenBankNumbers;
 	public String getName() {
 		return "Get GenBank Accession Numbers from File [DRM]";
@@ -19,7 +19,7 @@ import mesquite.oregonstate.lib.*;
 		return "Get GenBank Accession Numbers from File [DRM]...";
 	}
 	public String getExplanation() {		return "Annotates with GenBank accession numbers in tab-delimited text file";	}	/*.................................................................................................................*/	public int getVersionOfFirstRelease(){		return -NEXTRELEASE;  	}	/*.................................................................................................................*/	public boolean startJob(String arguments, Object condition, boolean hiredByName){
-		addMenuItem("Get GenBank Accession Numbers from File [DRM]...", new MesquiteCommand("getGenBankNumbers", this));		return true;	}
+//		addMenuItem("Get GenBank Accession Numbers from File [DRM]...", new MesquiteCommand("getGenBankNumbers", this));		return true;	}
 	/*.................................................................................................................*/
 	public String getGeneName(CharacterData data) {
 		String geneName = data.getName();
@@ -79,73 +79,75 @@ import mesquite.oregonstate.lib.*;
 		return "";
 	}
 
-	/*.................................................................................................................*/	/** A request for the MesquiteModule to perform a command.  It is passed two strings, the name of the command and the arguments.	This should be overridden by any module that wants to respond to a command.*/	public Object doCommand(String commandName, String arguments, CommandChecker checker) { 		if (checker.compare(MesquiteModule.class, null, null, commandName, "getGenBankNumbers")) {
-			if (taxa == null)
-				return null;
-			codeFileWithGenBankNumbers = new CodesGenBankFileProcessor();
-			if (!codeFileWithGenBankNumbers.chooseCodeFile())
-				return null;
-			int numMatrices = getProject().getNumberCharMatrices(taxa);
-			if (numMatrices<1)
-				return null;
-			Vector datas = new Vector();
-			for (int i = 0; i<numMatrices; i++){
-				CharacterData data = getProject().getCharacterMatrix(taxa, i);
-				if (data.isUserVisible())
-					datas.addElement(data);
-			}			if (getEmployer() instanceof ListModule){
-				ListModule listModule = (ListModule)getEmployer();
-				/*	Vector v = listModule.getAssistants();
-				for (int k = 0; k< v.size(); k++){
-					ListAssistant a = (ListAssistant)v.elementAt(k);
-					if (a instanceof mesquite.molec.TaxaListHasData.TaxaListHasData){
-						mesquite.molec.TaxaListHasData.TaxaListHasData tLHD = (mesquite.molec.TaxaListHasData.TaxaListHasData)a;
-						CharacterData data = tLHD.getCharacterData();
-						if (datas.indexOf(data)>=0)
-							datas.removeElement(data);
-					}
+	/*.................................................................................................................*/	public boolean isSubstantive(){		return false;	}	/*.................................................................................................................*/	public boolean operateOnTaxa(MesquiteTable table, Taxa taxa){		this.table = table;		this.taxa = taxa;		if (taxa == null)
+			return false;
+		codeFileWithGenBankNumbers = new CodesGenBankFileProcessor();
+		if (!codeFileWithGenBankNumbers.chooseCodeFile())
+			return false;
+		int numMatrices = getProject().getNumberCharMatrices(taxa);
+		if (numMatrices<1)
+			return false;
+		Vector datas = new Vector();
+		for (int i = 0; i<numMatrices; i++){
+			CharacterData data = getProject().getCharacterMatrix(taxa, i);
+			if (data.isUserVisible())
+				datas.addElement(data);
+		}
+		if (getEmployer() instanceof ListModule){
+			ListModule listModule = (ListModule)getEmployer();
+			/*	Vector v = listModule.getAssistants();
+			for (int k = 0; k< v.size(); k++){
+				ListAssistant a = (ListAssistant)v.elementAt(k);
+				if (a instanceof mesquite.molec.TaxaListHasData.TaxaListHasData){
+					mesquite.molec.TaxaListHasData.TaxaListHasData tLHD = (mesquite.molec.TaxaListHasData.TaxaListHasData)a;
+					CharacterData data = tLHD.getCharacterData();
+					if (datas.indexOf(data)>=0)
+						datas.removeElement(data);
 				}
-				 */
-				Puppeteer puppeteer = new Puppeteer(this);
-				CommandRecord prevR = MesquiteThread.getCurrentCommandRecord();
-				CommandRecord cRecord = new CommandRecord(true);
-				MesquiteThread.setCurrentCommandRecord(cRecord);
-				//at this point the vector should include only the ones not being shown.
-				boolean anySelected = table.anyCellSelectedAnyWay();
-				int added = 0;
-				int count = 0;
-				for (int i = 0; i<datas.size(); i++) {
-					if (datas.elementAt(i) instanceof MolecularData) {
-						MolecularData sequenceData =  (MolecularData)datas.elementAt(i);
-						for (int it=0; it<taxa.getNumTaxa(); it++) {
-							if (!anySelected || table.isRowSelected(it)) {
-								boolean wroteToLog = false;
+			}
+			 */
+			Puppeteer puppeteer = new Puppeteer(this);
+			CommandRecord prevR = MesquiteThread.getCurrentCommandRecord();
+			CommandRecord cRecord = new CommandRecord(true);
+			MesquiteThread.setCurrentCommandRecord(cRecord);
+			//at this point the vector should include only the ones not being shown.
+			boolean anySelected = table.anyCellSelectedAnyWay();
+			int added = 0;
+			int count = 0;
+			for (int i = 0; i<datas.size(); i++) {
+				if (datas.elementAt(i) instanceof MolecularData) {
+					MolecularData sequenceData =  (MolecularData)datas.elementAt(i);
+					for (int it=0; it<taxa.getNumTaxa(); it++) {
+						if (!anySelected || table.isRowSelected(it)) {
+							boolean wroteToLog = false;
 
-								String voucherCode = (String)taxa.getAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, it);
+							String voucherCode = (String)taxa.getAssociatedObject(VoucherInfoFromOTUIDDB.voucherCodeRef, it);
 
-								String line = codeFileWithGenBankNumbers.codeIsInCodeListFile(voucherCode, getGeneName(sequenceData), getFragmentName(sequenceData), getAlternativeFragmentName(sequenceData));
-								count++;
-								if (StringUtil.notEmpty(line)) {
-									String genBankNumber = codeFileWithGenBankNumbers.getGenBankNumberFromCodeFileLine(line);
-									String oldGenBankNumber = sequenceData.getGenBankNumber(it);
-									if (StringUtil.notEmpty(genBankNumber)) {
-										if (!genBankNumber.equalsIgnoreCase(oldGenBankNumber)) {
-											wroteToLog = true;
-											logln("  GenBank accession number added for matrix " + sequenceData.getName() + ",  taxon " + taxa.getTaxonName(it) + ":  "+ genBankNumber);
-											added++;
-											count=0;
-										}
-										sequenceData.setGenBankNumber(it, genBankNumber);
+							String line = codeFileWithGenBankNumbers.codeIsInCodeListFile(voucherCode, getGeneName(sequenceData), getFragmentName(sequenceData), getAlternativeFragmentName(sequenceData));
+							count++;
+							if (StringUtil.notEmpty(line)) {
+								String genBankNumber = codeFileWithGenBankNumbers.getGenBankNumberFromCodeFileLine(line);
+								String oldGenBankNumber = sequenceData.getGenBankNumber(it);
+								if (StringUtil.notEmpty(genBankNumber)) {
+									if (!genBankNumber.equalsIgnoreCase(oldGenBankNumber)) {
+										wroteToLog = true;
+										logln("  GenBank accession number added for matrix " + sequenceData.getName() + ",  taxon " + taxa.getTaxonName(it) + ":  "+ genBankNumber);
+										added++;
+										count=0;
 									}
+									sequenceData.setGenBankNumber(it, genBankNumber);
 								}
-								if (!wroteToLog && count>0 && count % 100 == 0)
-									log(".");
 							}
+							if (!wroteToLog && count>0 && count % 100 == 0)
+								log(".");
 						}
 					}
-
 				}
-				logln(""+added + " GenBank accession numbers added");
 
-				MesquiteThread.setCurrentCommandRecord(prevR);
-			}		}		else			return  super.doCommand(commandName, arguments, checker);		return null;	}	/*.................................................................................................................*/	public boolean isSubstantive(){		return false;	}	/*.................................................................................................................*/	public void setTableAndTaxa(MesquiteTable table, Taxa taxa){		this.table = table;		this.taxa = taxa;	}}
+			}
+			logln(""+added + " GenBank accession numbers added");
+
+			MesquiteThread.setCurrentCommandRecord(prevR);
+		}
+		return  true;
+	}}
